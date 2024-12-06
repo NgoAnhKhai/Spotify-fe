@@ -21,7 +21,6 @@ const RegisterPage = () => {
         username,
         password,
       });
-      console.log("respone", response.data);
 
       alert(response.message);
       navigate("/login");
