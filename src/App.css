@@ -2,4 +2,18 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  /* background-color: #000; */
+}
+
+.container-register {
+  padding: 100px;
+  background-color: #1f1f1f;
+  border-radius: 10px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  border: none;
+}
+
+.container-register .MuiBox-root {
+  padding: 2;
+  border-radius: 20px;
 }
