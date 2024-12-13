@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import MainHeader from "../../layout/MainHeader";
+import MainHeader from "../../../layout/MainHeader";
 import {
   Table,
   TableBody,
@@ -19,38 +19,52 @@ import {
   Alert,
   DialogContent,
   TextField,
+  Menu,
+  MenuItem,
 } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import fetchGetAllUser from "../../services/adminServices.js/UsersAdminServices.js/fetchGetAllUser";
-import fetchDeleteUser from "../../services/adminServices.js/UsersAdminServices.js/fetchDeleteUser";
-import { updateUserProfile } from "../../services/profileService";
 
-const DashboardPage = () => {
-  const [users, setUsers] = useState([]);
+import { useNavigate } from "react-router-dom";
+import { fetchGetAllArtist } from "../../../services/adminServices.js/ArtistAdminServices.js/fetchGetAllArtist";
+import { fetchDeleteArtist } from "../../../services/adminServices.js/ArtistAdminServices.js/fetchDeleteArtist";
+import { fetchUpdateArtist } from "../../../services/adminServices.js/ArtistAdminServices.js/fetchUpdateArtist";
+
+const DashboardArtistPage = () => {
+  const [artists, setArtists] = useState([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-  const [userToDelete, setUserToDelete] = useState(null);
-  const [userToEdit, setUserToEdit] = useState(null);
-  const [editedUsername, setEditedUsername] = useState("");
-  const [editedEmail, setEditedEmail] = useState("");
+  const [artistToDelete, setArtistToDelete] = useState(null);
+  const [artistToEdit, setArtistToEdit] = useState(null);
+  const [editedName, setEditedName] = useState("");
+
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [editedSong, setEditedSong] = useState("");
+  const [editedAlbum, setEditedAlbum] = useState("");
+  const [editedImgURL, setEditedImgURL] = useState("");
+  const [editedDescription, setEditedDescription] = useState("");
+  const [editedFollowersCount, setEditedFollowersCount] = useState("");
+  const [editedStartYear, setEditedStartYear] = useState("");
+  const [editedDifficulties, setEditedDifficulties] = useState("");
 
+  const openMenu = Boolean(anchorEl);
+  const navigate = useNavigate();
   // Load users from the server
-  const loadUsers = async (currentPage = 1) => {
+  const loadArtists = async (currentPage = 1) => {
     setLoading(true);
     try {
-      const data = await fetchGetAllUser(currentPage, 10);
-      setUsers(data.users);
+      const data = await fetchGetAllArtist(currentPage, 10);
+      setArtists(data.artists);
       setTotalPages(data.pagination.totalPages);
     } catch (error) {
-      console.error("Failed to load users", error);
+      console.error("Failed to load artists", error);
     } finally {
       setLoading(false);
     }
@@ -61,65 +75,72 @@ const DashboardPage = () => {
   };
 
   // Open Edit Dialog
-  const openEditDialogHandler = (user) => {
-    setUserToEdit(user);
-    setEditedUsername(user.username);
-    setEditedEmail(user.email);
+  const openEditDialogHandler = (artist) => {
+    setArtistToEdit(artist);
+    setEditedName(artist.name);
+    setEditedImgURL(artist.imgURL);
     setOpenEditDialog(true);
-  };
-
-  // Open Delete Dialog
-  const openDeleteDialogHandler = (userId) => {
-    setUserToDelete(userId);
-    setOpenDeleteDialog(true);
   };
 
   // Close Edit Dialog
   const handleCloseEditDialog = () => {
     setOpenEditDialog(false);
-    setUserToEdit(null);
-    setEditedUsername("");
-    setEditedEmail("");
+    setArtistToEdit(null);
+    setEditedName("");
+    setEditedDescription("");
+    setEditedFollowersCount("");
+    setEditedSong("");
+    setEditedAlbum("");
+    setEditedImgURL("");
+  };
+  // Open Delete Dialog
+  const openDeleteDialogHandler = (artistId) => {
+    setArtistToDelete(artistId);
+    setOpenDeleteDialog(true);
   };
 
   // Close Delete Dialog
   const handleCloseDeleteDialog = () => {
     setOpenDeleteDialog(false);
-    setUserToDelete(null);
+    setArtistToDelete(null);
   };
-
   const handleSaveChanges = async () => {
-    if (userToEdit) {
+    if (artistToEdit) {
       const updatedProfile = {};
 
-      if (editedUsername !== userToEdit.username) {
-        updatedProfile.username = editedUsername;
+      if (editedName !== artistToEdit.name) {
+        updatedProfile.name = editedName;
+      }
+      if (editedFollowersCount !== artistToEdit.followersCount) {
+        updatedProfile.followersCount = editedFollowersCount;
       }
 
-      if (editedEmail !== userToEdit.email) {
-        updatedProfile.email = editedEmail;
+      if (editedImgURL !== artistToEdit.imgURL) {
+        updatedProfile.imgURL = editedImgURL;
       }
 
       if (Object.keys(updatedProfile).length === 0) {
-        setSnackbarMessage("Không có thay đổi nào để lưu.");
+        setSnackbarMessage("No changes to save.");
         setSnackbarSeverity("info");
         setOpenSnackbar(true);
         return;
       }
 
       try {
-        await updateUserProfile(userToEdit._id, updatedProfile);
-
-        setUsers((prevUsers) =>
-          prevUsers.map((user) =>
-            user._id === userToEdit._id ? { ...user, ...updatedProfile } : user
-          )
+        // Update artist details using fetchUpdateArtist
+        await fetchUpdateArtist(artistToEdit._id, updatedProfile);
+        setArtists((prevArtists) =>
+          prevArtists.map((artist) => {
+            return artist._id === artistToEdit._id
+              ? { ...artistToEdit, ...updatedProfile }
+              : artist;
+          })
         );
 
-        setSnackbarMessage("User updated successfully!");
+        setSnackbarMessage("Artist updated successfully!");
         setSnackbarSeverity("success");
       } catch (error) {
-        setSnackbarMessage(error.message || "Failed to update user.");
+        setSnackbarMessage(error.message || "Failed to update artist.");
         setSnackbarSeverity("error");
       } finally {
         handleCloseEditDialog();
@@ -127,23 +148,22 @@ const DashboardPage = () => {
       }
     }
   };
-
   useEffect(() => {
-    loadUsers(page);
+    loadArtists(page);
   }, [page]);
 
-  // Delete User
-  const handleDeleteUser = async () => {
-    if (userToDelete) {
+  // Delete Artist
+  const handleDeleteArtist = async () => {
+    if (artistToDelete) {
       try {
-        await fetchDeleteUser(userToDelete);
-        setUsers((prevUsers) =>
-          prevUsers.filter((user) => user._id !== userToDelete)
+        await fetchDeleteArtist(artistToDelete);
+        setArtists((prevArtists) =>
+          prevArtists.filter((artist) => artist._id !== artistToDelete)
         );
-        setSnackbarMessage("User deleted successfully!");
+        setSnackbarMessage("Artist deleted successfully!");
         setSnackbarSeverity("success");
       } catch (error) {
-        setSnackbarMessage("Failed to delete user.");
+        setSnackbarMessage("Failed to delete artist.");
         setSnackbarSeverity("error");
       } finally {
         handleCloseDeleteDialog();
@@ -152,11 +172,38 @@ const DashboardPage = () => {
     }
   };
 
-  // Close Snackbar
   const handleCloseSnackbar = () => {
     setOpenSnackbar(false);
   };
 
+  const navigateRoute = (view) => {
+    switch (view) {
+      case "Users":
+        navigate("/admin/dashboard/Users");
+        break;
+      case "Artists":
+        navigate("/admin/dashboard/artists");
+        break;
+      case "Genres":
+        navigate("/admin/dashboard/genres");
+        break;
+      case "Songs":
+        navigate("/admin/dashboard/songs");
+        break;
+      default:
+        navigate("/admin/dashboard/albums");
+        break;
+    }
+  };
+
+  const handleMenuClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  // Close menu when clicking on a menu item
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
   return (
     <div>
       <MainHeader />
@@ -173,9 +220,55 @@ const DashboardPage = () => {
                     cursor: "pointer",
                   }}
                 >
-                  <IconButton color="primary">
-                    <AddIcon />
+                  <IconButton onClick={handleMenuClick} color="primary">
+                    <MoreVertIcon />
                   </IconButton>
+                  <Menu
+                    anchorEl={anchorEl}
+                    open={openMenu}
+                    onClose={handleMenuClose}
+                  >
+                    <MenuItem
+                      onClick={() => {
+                        navigateRoute("Users");
+                        handleMenuClose();
+                      }}
+                    >
+                      Users
+                    </MenuItem>
+                    <MenuItem
+                      onClick={() => {
+                        navigateRoute("Artists");
+                        handleMenuClose();
+                      }}
+                    >
+                      Artists
+                    </MenuItem>
+                    <MenuItem
+                      onClick={() => {
+                        navigateRoute("Genres");
+                        handleMenuClose();
+                      }}
+                    >
+                      Genres
+                    </MenuItem>
+                    <MenuItem
+                      onClick={() => {
+                        navigateRoute("Songs");
+                        handleMenuClose();
+                      }}
+                    >
+                      Songs
+                    </MenuItem>
+                    <MenuItem
+                      onClick={() => {
+                        navigateRoute("Albums");
+                        handleMenuClose();
+                      }}
+                    >
+                      Albums
+                    </MenuItem>
+                  </Menu>
                 </TableCell>
                 <TableCell
                   sx={{
@@ -184,7 +277,7 @@ const DashboardPage = () => {
                     cursor: "pointer",
                   }}
                 >
-                  Users
+                  Artists
                 </TableCell>
                 <TableCell
                   sx={{
@@ -193,7 +286,7 @@ const DashboardPage = () => {
                     cursor: "pointer",
                   }}
                 >
-                  Email
+                  Followers Count
                 </TableCell>
                 <TableCell
                   sx={{
@@ -202,7 +295,7 @@ const DashboardPage = () => {
                     cursor: "pointer",
                   }}
                 >
-                  Invoices
+                  Song
                 </TableCell>
                 <TableCell
                   sx={{
@@ -211,7 +304,7 @@ const DashboardPage = () => {
                     cursor: "pointer",
                   }}
                 >
-                  Date
+                  Album
                 </TableCell>
                 <TableCell
                   sx={{
@@ -241,8 +334,8 @@ const DashboardPage = () => {
                   </TableCell>
                 </TableRow>
               ) : (
-                users.map((user, index) => (
-                  <TableRow key={user._id}>
+                artists.map((artist, index) => (
+                  <TableRow key={artist._id}>
                     <TableCell
                       sx={{ border: "1px solid #ddd", textAlign: "center" }}
                     >
@@ -251,40 +344,56 @@ const DashboardPage = () => {
                     <TableCell
                       sx={{ border: "1px solid #ddd", textAlign: "center" }}
                     >
-                      {user.username}
+                      {artist.name}
                     </TableCell>
                     <TableCell
                       sx={{ border: "1px solid #ddd", textAlign: "center" }}
                     >
-                      {user.email}
+                      {artist.followersCount}
                     </TableCell>
                     <TableCell
                       sx={{ border: "1px solid #ddd", textAlign: "center" }}
                     >
-                      {user.subscriptionType}
+                      {Array.isArray(artist.songs) &&
+                      artist.songs.length > 0 ? (
+                        artist.songs.map((song, index) => (
+                          <div key={index}>{song.title}</div>
+                        ))
+                      ) : (
+                        <span>No songs available</span>
+                      )}
                     </TableCell>
+
                     <TableCell
                       sx={{ border: "1px solid #ddd", textAlign: "center" }}
                     >
-                      {new Date(user.createdAt).toLocaleDateString()}
+                      {Array.isArray(artist.albums) &&
+                      artist.albums.length > 0 ? (
+                        artist.albums.map((album, index) => (
+                          <div key={index}>{album.title}</div>
+                        ))
+                      ) : (
+                        <span>No albums available</span>
+                      )}
                     </TableCell>
+
                     <TableCell
                       sx={{ border: "1px solid #ddd", textAlign: "center" }}
                     >
-                      {user.role}
+                      {artist.role}
                     </TableCell>
                     <TableCell
                       sx={{ border: "1px solid #ddd", textAlign: "center" }}
                     >
                       <IconButton
                         color="primary"
-                        onClick={() => openEditDialogHandler(user)}
+                        onClick={() => openEditDialogHandler(artist)}
                       >
                         <EditIcon />
                       </IconButton>
                       <IconButton
                         color="secondary"
-                        onClick={() => openDeleteDialogHandler(user._id)}
+                        onClick={() => openDeleteDialogHandler(artist._id)}
                       >
                         <DeleteIcon />
                       </IconButton>
@@ -303,22 +412,32 @@ const DashboardPage = () => {
           sx={{ display: "flex", justifyContent: "center", marginTop: "20px" }}
         />
 
-        {/* Edit User Dialog */}
+        {/* Edit Artist Dialog */}
         <Dialog open={openEditDialog} onClose={handleCloseEditDialog}>
-          <DialogTitle>Edit User</DialogTitle>
+          <DialogTitle>Edit Artist</DialogTitle>
           <DialogContent>
             <TextField
-              label="Username"
+              label="Name"
               fullWidth
-              value={editedUsername}
-              onChange={(e) => setEditedUsername(e.target.value)}
+              value={editedName}
+              onChange={(e) => setEditedName(e.target.value)}
               sx={{ marginBottom: "20px" }}
             />
             <TextField
-              label="Email"
+              label="Followers Count"
               fullWidth
-              value={editedEmail}
-              onChange={(e) => setEditedEmail(e.target.value)}
+              type="number"
+              value={editedFollowersCount}
+              onChange={(e) => setEditedFollowersCount(e.target.value)}
+              sx={{ marginBottom: "20px" }}
+            />
+
+            <TextField
+              label="Image URL"
+              fullWidth
+              value={editedImgURL}
+              onChange={(e) => setEditedImgURL(e.target.value)}
+              sx={{ marginBottom: "20px" }}
             />
           </DialogContent>
           <DialogActions>
@@ -341,7 +460,7 @@ const DashboardPage = () => {
             <Button onClick={handleCloseDeleteDialog} color="primary">
               Cancel
             </Button>
-            <Button onClick={handleDeleteUser} color="secondary">
+            <Button onClick={handleDeleteArtist} color="secondary">
               Delete
             </Button>
           </DialogActions>
@@ -366,4 +485,4 @@ const DashboardPage = () => {
   );
 };
 
-export default DashboardPage;
+export default DashboardArtistPage;
