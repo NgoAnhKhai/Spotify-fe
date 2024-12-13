@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { useAuth } from "../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import {
-  Button,
   TextField,
-  Box,
+  Button,
   Typography,
+  Box,
   Snackbar,
   SnackbarContent,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
-import apiService from "../api/apiService";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -17,23 +17,8 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [authToken, setAuthToken] = useState(null); // Lưu trữ token trong state
-  const [tokenExpiration, setTokenExpiration] = useState(null); // Lưu thời gian hết hạn token
-
+  const { signin } = useAuth();
   const navigate = useNavigate();
-  // Tạo một hiệu ứng kiểm tra token hết hạn
-  useEffect(() => {
-    if (authToken && tokenExpiration) {
-      const timeout = setTimeout(() => {
-        setAuthToken(null); // Xóa token khi hết hạn
-        setTokenExpiration(null);
-        setSnackbarMessage("Token đã hết hạn, vui lòng đăng nhập lại.");
-        setOpenSnackbar(true);
-      }, tokenExpiration - Date.now());
-
-      return () => clearTimeout(timeout); // Dọn dẹp timeout khi component unmount
-    }
-  }, [authToken, tokenExpiration]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -41,39 +26,40 @@ const LoginPage = () => {
     setError("");
 
     try {
-      const response = await apiService.post("/user/login", {
-        email,
-        password,
-      });
-      if (response.token) {
-        const expirationTime = Date.now() + 3600000;
-        setAuthToken(response.token);
-        setTokenExpiration(expirationTime);
+      const user = await signin(email, password);
+      console.log("user", user);
 
-        setSnackbarMessage("Đăng nhập thành công!");
-        setOpenSnackbar(true);
-
-        setTimeout(() => {
-          navigate("/");
-        }, 2000);
+      if (user && user.role === "admin") {
+        navigate("/admin/dashboard");
+      } else {
+        navigate("/");
       }
-    } catch (error) {
+    } catch (err) {
       setLoading(false);
-      setError(error.message || "Đăng nhập thất bại. Vui lòng thử lại.");
+      setError(err.response?.message || "Đăng nhập thất bại!");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="container-Login">
+    <div
+      className="container-login"
+      style={{
+        backgroundColor: "#121212",
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
       <Box
         sx={{
           maxWidth: 400,
           margin: "auto",
-          padding: 2,
+          padding: 5,
           backgroundColor: "#000",
-          borderRadius: 2,
+          borderRadius: 10,
           boxShadow: 3,
           border: "none",
         }}
@@ -94,12 +80,16 @@ const LoginPage = () => {
           />
         </Box>
 
-        <Typography sx={{ color: "white" }} variant="h4" align="center">
-          Sign up to start listening
+        <Typography
+          sx={{ fontWeight: "bold", color: "white" }}
+          variant="h4"
+          align="center"
+        >
+          Đăng nhập vào Spotify
         </Typography>
         <form onSubmit={handleSubmit}>
           <TextField
-            label="name@domain.com"
+            label="Email hoặc tên người dùng"
             fullWidth
             margin="normal"
             value={email}
@@ -128,7 +118,7 @@ const LoginPage = () => {
           />
 
           <TextField
-            label="Password"
+            label="Mật khẩu"
             type="password"
             fullWidth
             margin="normal"
@@ -165,16 +155,17 @@ const LoginPage = () => {
             sx={{
               borderRadius: "15px",
               marginTop: 2,
-              backgroundColor: "#1dd75d",
+              background: "linear-gradient(to bottom, #1e90fb 48%, #000000)",
               fontWeight: "bold",
               fontSize: "20px",
               height: "45px",
             }}
             disabled={loading}
           >
-            {loading ? "Waiting..." : "Next"}
+            {loading ? "Đang chờ..." : "Đăng nhập"}
           </Button>
         </form>
+
         <Snackbar
           open={openSnackbar}
           autoHideDuration={3000}

@@ -25,7 +25,7 @@ const RegisterPage = () => {
     setError("");
 
     try {
-      await apiService.post("/user/register", {
+      await apiService.post("/authentications/register", {
         email,
         username,
         password,
@@ -47,14 +47,23 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="container-register">
+    <div
+      className="container-register"
+      style={{
+        backgroundColor: "#121212",
+        minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
       <Box
         sx={{
           maxWidth: 400,
           margin: "auto",
           padding: 2,
           backgroundColor: "#000",
-          borderRadius: 2,
+          borderRadius: 10,
           boxShadow: 3,
           border: "none",
         }}
@@ -175,7 +184,7 @@ const RegisterPage = () => {
             sx={{
               borderRadius: "15px",
               marginTop: 2,
-              backgroundColor: "#1dd75d",
+              background: "linear-gradient(to bottom, #1e90fb 48%, #000000)",
               fontWeight: "bold",
               fontSize: "20px",
               height: "45px",

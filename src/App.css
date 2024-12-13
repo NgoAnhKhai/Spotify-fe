@@ -2,18 +2,40 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  /* background-color: #000; */
+  background-color: #000;
+  height: 100vh;
+  overflow: hidden;
 }
 
-.container-register {
-  padding: 100px;
-  background-color: #1f1f1f;
+.album-container {
+  background-color: #000;
+}
+.containerProfile {
+  background: linear-gradient(to bottom, #1e90ff 15%, #000);
+}
+
+.album-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  background: back;
+}
+
+/* styles.css */
+.custom-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #6200ea #e0e0e0;
+}
+
+.custom-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+  background-color: #6200ea;
   border-radius: 10px;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-  border: none;
 }
 
-.container-register .MuiBox-root {
-  padding: 2;
-  border-radius: 20px;
+.custom-scroll::-webkit-scrollbar-track {
+  background-color: #e0e0e0;
 }
