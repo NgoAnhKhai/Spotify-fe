@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import MainHeader from "../../../layout/MainHeader";
+
 import {
   Table,
   TableBody,
@@ -46,13 +46,9 @@ const DashboardArtistPage = () => {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [anchorEl, setAnchorEl] = useState(null);
-  const [editedSong, setEditedSong] = useState("");
-  const [editedAlbum, setEditedAlbum] = useState("");
+
   const [editedImgURL, setEditedImgURL] = useState("");
-  const [editedDescription, setEditedDescription] = useState("");
   const [editedFollowersCount, setEditedFollowersCount] = useState("");
-  const [editedStartYear, setEditedStartYear] = useState("");
-  const [editedDifficulties, setEditedDifficulties] = useState("");
 
   const openMenu = Boolean(anchorEl);
   const navigate = useNavigate();
@@ -87,10 +83,7 @@ const DashboardArtistPage = () => {
     setOpenEditDialog(false);
     setArtistToEdit(null);
     setEditedName("");
-    setEditedDescription("");
     setEditedFollowersCount("");
-    setEditedSong("");
-    setEditedAlbum("");
     setEditedImgURL("");
   };
   // Open Delete Dialog
@@ -206,7 +199,6 @@ const DashboardArtistPage = () => {
   };
   return (
     <div>
-      <MainHeader />
       <div className="dashboard-container">
         <TableContainer component={Paper}>
           <Table sx={{ borderCollapse: "collapse" }}>
@@ -273,8 +265,9 @@ const DashboardArtistPage = () => {
                 <TableCell
                   sx={{
                     border: "1px solid #ddd",
+                    padding: "8px",
+                    fontWeight: "bold",
                     textAlign: "center",
-                    cursor: "pointer",
                   }}
                 >
                   Artists
@@ -282,8 +275,9 @@ const DashboardArtistPage = () => {
                 <TableCell
                   sx={{
                     border: "1px solid #ddd",
+                    padding: "8px",
+                    fontWeight: "bold",
                     textAlign: "center",
-                    cursor: "pointer",
                   }}
                 >
                   Followers Count
@@ -291,8 +285,9 @@ const DashboardArtistPage = () => {
                 <TableCell
                   sx={{
                     border: "1px solid #ddd",
+                    padding: "8px",
+                    fontWeight: "bold",
                     textAlign: "center",
-                    cursor: "pointer",
                   }}
                 >
                   Song
@@ -300,8 +295,9 @@ const DashboardArtistPage = () => {
                 <TableCell
                   sx={{
                     border: "1px solid #ddd",
+                    padding: "8px",
+                    fontWeight: "bold",
                     textAlign: "center",
-                    cursor: "pointer",
                   }}
                 >
                   Album
@@ -309,8 +305,9 @@ const DashboardArtistPage = () => {
                 <TableCell
                   sx={{
                     border: "1px solid #ddd",
+                    padding: "8px",
+                    fontWeight: "bold",
                     textAlign: "center",
-                    cursor: "pointer",
                   }}
                 >
                   Role
@@ -318,8 +315,9 @@ const DashboardArtistPage = () => {
                 <TableCell
                   sx={{
                     border: "1px solid #ddd",
+                    padding: "8px",
+                    fontWeight: "bold",
                     textAlign: "center",
-                    cursor: "pointer",
                   }}
                 >
                   Actions

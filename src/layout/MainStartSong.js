@@ -111,129 +111,135 @@ const MainStartSong = () => {
   };
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        width: "100%",
-        backgroundColor: "#121212",
-        padding: "16px",
-        borderTop: "1px solid #282828",
-      }}
-    >
+    <div className="MainStartSong">
       <Box
         sx={{
           display: "flex",
-          justifyContent: "space-between",
+          flexDirection: "column",
+          justifyContent: "center",
           alignItems: "center",
           width: "100%",
-          maxWidth: "900px",
-          padding: "8px 0",
+          backgroundColor: "#121212",
+          padding: "16px",
+          borderTop: "1px solid #282828",
         }}
       >
         <Box
           sx={{
-            color: "white",
             display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "flex-start",
-            width: "30%",
-          }}
-        >
-          {currentSong ? (
-            <>
-              <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-                {currentSong.title}
-              </Typography>
-              <Typography variant="body2" sx={{ color: "#b3b3b3" }}>
-                {formatTime(currentTime)} / {formatTime(duration)}
-              </Typography>
-            </>
-          ) : (
-            <Typography variant="body1" sx={{ color: "#b3b3b3" }}>
-              No song selected
-            </Typography>
-          )}
-        </Box>
-
-        <Box sx={{ display: "flex", alignItems: "center", gap: "16px" }}>
-          <IconButton
-            onClick={handlePreviousSong}
-            color="secondary"
-            sx={{ color: "white" }}
-          >
-            <SkipPreviousIcon fontSize="large" />
-          </IconButton>
-          <IconButton
-            onClick={togglePlayPause}
-            sx={{
-              borderRadius: "50%",
-              backgroundColor: "white",
-              padding: "12px",
-              color: "#121212",
-              "&:hover": { backgroundColor: "#e0e0e0" },
-            }}
-          >
-            {isPlaying ? (
-              <PauseIcon fontSize="large" />
-            ) : (
-              <PlayArrowIcon fontSize="large" />
-            )}
-          </IconButton>
-          <IconButton
-            onClick={handleNextSong}
-            color="secondary"
-            sx={{ color: "white" }}
-          >
-            <SkipNextIcon fontSize="large" />
-          </IconButton>
-        </Box>
-
-        <Box
-          sx={{
-            display: "flex",
+            justifyContent: "space-between",
             alignItems: "center",
-            justifyContent: "flex-end",
-            width: "30%",
+            width: "100%",
+            maxWidth: "900px",
+            padding: "8px 0",
           }}
         >
-          <VolumeUpIcon sx={{ color: "white", marginRight: "10px" }} />
-          <Slider
-            value={volume}
-            onChange={handleVolumeChange}
-            sx={{ color: "#1e90ff", width: "100px" }}
-            onMouseEnter={() => setShowThumb(true)}
-            onMouseLeave={() => setShowThumb(false)}
-            componentsProps={{
-              thumb: {
-                style: {
-                  display: showThumb ? "block" : "none",
-                },
-              },
+          <Box
+            sx={{
+              color: "white",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "flex-start",
+              width: "30%",
             }}
-          />
-        </Box>
-      </Box>
+          >
+            {currentSong ? (
+              <>
+                <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                  {currentSong.title}
+                </Typography>
+                <Typography color="#4f5370" variant="h7">
+                  {currentSong.artistID.name}
+                </Typography>
 
-      <Slider
-        value={currentTime}
-        max={duration}
-        onChange={handleSeekChange}
-        sx={{ width: "80%", color: "#1e90ff", marginTop: "8px" }}
-        onMouseEnter={() => setShowThumb(true)}
-        onMouseLeave={() => setShowThumb(false)}
-        componentsProps={{
-          thumb: {
-            style: {
-              display: showThumb ? "block" : "none",
+                <Typography variant="body2" sx={{ color: "#b3b3b3" }}>
+                  {formatTime(currentTime)} / {formatTime(duration)}
+                </Typography>
+              </>
+            ) : (
+              <Typography variant="body1" sx={{ color: "#b3b3b3" }}>
+                No song selected
+              </Typography>
+            )}
+          </Box>
+
+          <Box sx={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            <IconButton
+              onClick={handlePreviousSong}
+              color="secondary"
+              sx={{ color: "white" }}
+            >
+              <SkipPreviousIcon fontSize="large" />
+            </IconButton>
+            <IconButton
+              onClick={togglePlayPause}
+              sx={{
+                borderRadius: "50%",
+                backgroundColor: "white",
+                padding: "12px",
+                color: "#121212",
+                "&:hover": { backgroundColor: "#e0e0e0" },
+              }}
+            >
+              {isPlaying ? (
+                <PauseIcon fontSize="large" />
+              ) : (
+                <PlayArrowIcon fontSize="large" />
+              )}
+            </IconButton>
+            <IconButton
+              onClick={handleNextSong}
+              color="secondary"
+              sx={{ color: "white" }}
+            >
+              <SkipNextIcon fontSize="large" />
+            </IconButton>
+          </Box>
+
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "flex-end",
+              width: "30%",
+            }}
+          >
+            <VolumeUpIcon sx={{ color: "white", marginRight: "10px" }} />
+            <Slider
+              value={volume}
+              onChange={handleVolumeChange}
+              sx={{ color: "#1e90ff", width: "100px" }}
+              onMouseEnter={() => setShowThumb(true)}
+              onMouseLeave={() => setShowThumb(false)}
+              componentsProps={{
+                thumb: {
+                  style: {
+                    display: showThumb ? "block" : "none",
+                  },
+                },
+              }}
+            />
+          </Box>
+        </Box>
+
+        <Slider
+          value={currentTime}
+          max={duration}
+          onChange={handleSeekChange}
+          sx={{ width: "80%", color: "#1e90ff", marginTop: "8px" }}
+          onMouseEnter={() => setShowThumb(true)}
+          onMouseLeave={() => setShowThumb(false)}
+          componentsProps={{
+            thumb: {
+              style: {
+                display: showThumb ? "block" : "none",
+              },
             },
-          },
-        }}
-      />
-    </Box>
+          }}
+        />
+      </Box>
+    </div>
   );
 };
 

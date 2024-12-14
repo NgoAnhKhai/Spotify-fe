@@ -62,7 +62,23 @@ export const upgradeSubscription = async (userId) => {
       }
     );
 
-    return response;
+    const {
+      remainingDays,
+      remainingHours,
+      remainingMinutes,
+      remainingSeconds,
+    } = response.user;
+
+    return {
+      ...response,
+      user: {
+        ...response.user,
+        remainingDays,
+        remainingHours,
+        remainingMinutes,
+        remainingSeconds,
+      },
+    };
   } catch (error) {
     console.error("Không thể nâng cấp tài khoản:", error.message);
     throw error;
@@ -99,12 +115,35 @@ export const fetchChangePassword = async (
   confirmPassword
 ) => {
   try {
-    const response = await apiService.put(`/users/${userId}/profile`, {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      throw new Error("No token found in localStorage");
+    }
+    const data = {
       oldPassword,
       newPassword,
       confirmPassword,
-    });
-    return response.user;
+    };
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      throw new Error("All fields are required");
+    }
+
+    if (newPassword !== confirmPassword) {
+      throw new Error("Passwords do not match");
+    }
+
+    const response = await apiService.put(
+      `/users/${userId}/profile/changePassword`,
+      data,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return response;
   } catch (error) {
     throw error;
   }

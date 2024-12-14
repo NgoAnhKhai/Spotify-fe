@@ -11,7 +11,7 @@
   background-color: #000;
 }
 .containerProfile {
-  background: linear-gradient(to bottom, #1e90ff 15%, #000);
+  background: linear-gradient(to bottom, #1e90ff 15%, #fff);
 }
 
 .album-container {
@@ -38,4 +38,12 @@
 
 .custom-scroll::-webkit-scrollbar-track {
   background-color: #e0e0e0;
+}
+
+@media (max-width: 375.2px) {
+  /* XoaLeftSideBar và RightSideBar, thu nhỏ thanh tim kiem va thu nho main startSong, phóng to HomepAge  */
+}
+
+@media (max-width: 905px) {
+  /* Keo rightsidebar len mot ti. day mainstartsong len, homepage thi thu nha cac bai hat */
 }

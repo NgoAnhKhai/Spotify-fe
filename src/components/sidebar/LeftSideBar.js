@@ -12,6 +12,7 @@ import {
   IconButton,
   TextField,
 } from "@mui/material";
+
 import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
@@ -190,166 +191,172 @@ function LeftSideBar() {
   }));
 
   return (
-    <Drawer
-      sx={{
-        width: drawerWidth,
-        flexShrink: 0,
-        "& .MuiDrawer-paper": {
-          width: drawerWidth,
-          position: "sticky",
-          boxSizing: "border-box",
-          backgroundColor: "#121212",
-          border: "none",
-          color: "white",
-          borderRadius: "10px",
-        },
-      }}
-      variant="permanent"
-      anchor="left"
-    >
-      <Box
+    <div className="LeftSideBar">
+      <Drawer
         sx={{
-          padding: "16px",
-          textAlign: "center",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 1,
-        }}
-      >
-        <IconButton
-          onClick={handleOpenCreateDialog}
-          sx={{
-            backgroundColor: "#fff",
-            borderRadius: "50%",
-            width: "35px",
-            height: "35px",
-            "&:hover": { transform: "scale(1.1)" },
-          }}
-        >
-          <AddIcon sx={{ color: "#000", fontWeight: "bold" }} />
-        </IconButton>
-        <Button
-          onClick={toggleDrawerSize}
-          variant="h6"
-          component="div"
-          sx={{
-            borderRadius: "10px",
-            fontWeight: "bold",
+          width: drawerWidth,
+          flexShrink: 0,
+          "& .MuiDrawer-paper": {
+            width: drawerWidth,
+            position: "sticky",
+            boxSizing: "border-box",
+            backgroundColor: "#121212",
+            border: "none",
             color: "white",
-            textTransform: "none",
-          }}
-        >
-          Thư Viện
-        </Button>
-      </Box>
-      <Divider sx={{ backgroundColor: "grey" }} />
-
-      {/* Content */}
-      {playlists.length === 0 ? (
+            borderRadius: "10px",
+          },
+        }}
+        variant="permanent"
+        anchor="left"
+      >
         <Box
           sx={{
             padding: "16px",
             textAlign: "center",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 1,
           }}
         >
-          <Typography variant="h6" color="white">
-            Chào mừng
-          </Typography>
-          <Typography color="grey">Tạo danh sách đầu tiên của bạn</Typography>
-        </Box>
-      ) : (
-        playlists.map((playlist) => (
-          <Box
-            key={playlist._id}
+          <IconButton
+            onClick={handleOpenCreateDialog}
             sx={{
-              display: "flex",
-              alignItems: "center",
-              padding: "10px",
-              backgroundColor: "#1e1e1e",
-              borderRadius: "10px",
-              marginBottom: "10px",
-              cursor: "pointer",
+              backgroundColor: "#fff",
+              borderRadius: "50%",
+              width: "35px",
+              height: "35px",
+              "&:hover": { transform: "scale(1.1)" },
             }}
-            onClick={() => handlePlaylistClick(playlist._id)}
           >
-            <Typography variant="h6" fontWeight="bold" color="white">
-              {playlist.title}
+            <AddIcon sx={{ color: "#000", fontWeight: "bold" }} />
+          </IconButton>
+          <Button
+            onClick={toggleDrawerSize}
+            variant="h6"
+            component="div"
+            sx={{
+              borderRadius: "10px",
+              fontWeight: "bold",
+              color: "white",
+              textTransform: "none",
+            }}
+          >
+            Thư Viện
+          </Button>
+        </Box>
+        <Divider sx={{ backgroundColor: "grey" }} />
+
+        {/* Content */}
+        {playlists.length === 0 ? (
+          <Box
+            sx={{
+              padding: "16px",
+              textAlign: "center",
+            }}
+          >
+            <Typography variant="h6" color="white">
+              Chào mừng
             </Typography>
-            <IconButton
-              onClick={(e) => {
-                e.stopPropagation();
-                handleOpenDeleteDialog(playlist._id);
-              }}
-              sx={{
-                marginLeft: "auto",
-                color: "#fff",
-              }}
-            >
-              <DeleteIcon />
-            </IconButton>
+            <Typography color="grey">Tạo danh sách đầu tiên của bạn</Typography>
           </Box>
-        ))
-      )}
+        ) : (
+          playlists.map((playlist) => (
+            <Box
+              key={playlist._id}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                padding: "10px",
+                backgroundColor: "#1e1e1e",
+                borderRadius: "10px",
+                marginBottom: "10px",
+                cursor: "pointer",
+              }}
+              onClick={() => handlePlaylistClick(playlist._id)}
+            >
+              <Typography variant="h6" fontWeight="bold" color="white">
+                {playlist.title}
+              </Typography>
+              <IconButton
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleOpenDeleteDialog(playlist._id);
+                }}
+                sx={{
+                  marginLeft: "auto",
+                  color: "#fff",
+                }}
+              >
+                <DeleteIcon />
+              </IconButton>
+            </Box>
+          ))
+        )}
 
-      {/* Dialog Yêu cầu đăng nhập */}
-      <Dialog open={open} onClose={handleClose}>
-        <DialogTitle sx={{ fontWeight: "bold" }}>
-          Tạo danh sách phát
-        </DialogTitle>
-        <DialogContent>
-          <Typography>Đăng nhập để tạo playlist</Typography>
-        </DialogContent>
-        <DialogActions>
-          <StyleButtonHold onClick={handleClose}>Để sau</StyleButtonHold>
-          <StyledButton onClick={() => navigate("/login")}>
-            Đăng nhập
-          </StyledButton>
-        </DialogActions>
-      </Dialog>
+        {/* Dialog Yêu cầu đăng nhập */}
+        <Dialog open={open} onClose={handleClose}>
+          <DialogTitle sx={{ fontWeight: "bold" }}>
+            Tạo danh sách phát
+          </DialogTitle>
+          <DialogContent>
+            <Typography>Đăng nhập để tạo playlist</Typography>
+          </DialogContent>
+          <DialogActions>
+            <StyleButtonHold onClick={handleClose}>Để sau</StyleButtonHold>
+            <StyledButton onClick={() => navigate("/login")}>
+              Đăng nhập
+            </StyledButton>
+          </DialogActions>
+        </Dialog>
 
-      {/* Dialog tạo playlist */}
-      <Dialog open={openCreateDialog} onClose={handleCloseCreateDialog}>
-        <DialogTitle sx={{ fontWeight: "bold" }}>Tạo playlist mới</DialogTitle>
-        <DialogContent>
-          <TextField
-            fullWidth
-            label="Tên Playlist"
-            value={playlistTitle}
-            onChange={(e) => setPlaylistTitle(e.target.value)}
-            variant="outlined"
-            sx={{ marginBottom: 2 }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <StyledButton onClick={handleCreatePlaylist}>Tạo</StyledButton>
-          <StyledButton onClick={handleCloseCreateDialog}>Đóng</StyledButton>
-        </DialogActions>
-      </Dialog>
+        {/* Dialog tạo playlist */}
+        <Dialog open={openCreateDialog} onClose={handleCloseCreateDialog}>
+          <DialogTitle sx={{ fontWeight: "bold" }}>
+            Tạo playlist mới
+          </DialogTitle>
+          <DialogContent>
+            <TextField
+              fullWidth
+              label="Tên Playlist"
+              value={playlistTitle}
+              onChange={(e) => setPlaylistTitle(e.target.value)}
+              variant="outlined"
+              sx={{ marginBottom: 2 }}
+            />
+          </DialogContent>
+          <DialogActions>
+            <StyledButton onClick={handleCreatePlaylist}>Tạo</StyledButton>
+            <StyledButton onClick={handleCloseCreateDialog}>Đóng</StyledButton>
+          </DialogActions>
+        </Dialog>
 
-      {/* Dialog xóa playlist */}
-      <Dialog open={openDeleteDialog} onClose={handleCloseDeleteDialog}>
-        <DialogTitle sx={{ fontWeight: "bold" }}>Xóa Playlist</DialogTitle>
-        <DialogContent>
-          <Typography>Bạn có chắc chắn muốn xóa playlist này không?</Typography>
-        </DialogContent>
-        <DialogActions>
-          <StyledButton onClick={handleDeletePlaylist}>Xóa</StyledButton>
-          <StyledButton onClick={handleCloseDeleteDialog}>Hủy</StyledButton>
-        </DialogActions>
-      </Dialog>
-      <Box
-        sx={{
-          position: "absolute",
-          right: 0,
-          top: 0,
-          bottom: 0,
-          width: "5px",
-          cursor: "ew-resize",
-        }}
-        onMouseDown={startResize}
-      />
-    </Drawer>
+        {/* Dialog xóa playlist */}
+        <Dialog open={openDeleteDialog} onClose={handleCloseDeleteDialog}>
+          <DialogTitle sx={{ fontWeight: "bold" }}>Xóa Playlist</DialogTitle>
+          <DialogContent>
+            <Typography>
+              Bạn có chắc chắn muốn xóa playlist này không?
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <StyledButton onClick={handleDeletePlaylist}>Xóa</StyledButton>
+            <StyledButton onClick={handleCloseDeleteDialog}>Hủy</StyledButton>
+          </DialogActions>
+        </Dialog>
+        <Box
+          sx={{
+            position: "absolute",
+            right: 0,
+            top: 0,
+            bottom: 0,
+            width: "5px",
+            cursor: "ew-resize",
+          }}
+          onMouseDown={startResize}
+        />
+      </Drawer>
+    </div>
   );
 }
 

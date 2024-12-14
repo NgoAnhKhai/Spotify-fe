@@ -191,7 +191,6 @@ const DashboardGenresPage = () => {
   };
   return (
     <div>
-      <MainHeader />
       <div className="dashboard-container">
         <TableContainer component={Paper}>
           <Table sx={{ borderCollapse: "collapse" }}>
@@ -258,8 +257,9 @@ const DashboardGenresPage = () => {
                 <TableCell
                   sx={{
                     border: "1px solid #ddd",
+                    padding: "8px",
+                    fontWeight: "bold",
                     textAlign: "center",
-                    cursor: "pointer",
                   }}
                 >
                   Genres name
@@ -267,8 +267,9 @@ const DashboardGenresPage = () => {
                 <TableCell
                   sx={{
                     border: "1px solid #ddd",
+                    padding: "8px",
+                    fontWeight: "bold",
                     textAlign: "center",
-                    cursor: "pointer",
                   }}
                 >
                   Description
@@ -276,8 +277,9 @@ const DashboardGenresPage = () => {
                 <TableCell
                   sx={{
                     border: "1px solid #ddd",
+                    padding: "8px",
+                    fontWeight: "bold",
                     textAlign: "center",
-                    cursor: "pointer",
                   }}
                 >
                   Actions

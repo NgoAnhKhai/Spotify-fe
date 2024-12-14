@@ -4,18 +4,21 @@ import Router from "./routes";
 import { ThemeProvider } from "./contexts/darkMode/ThemeProvider";
 import { AuthProvider } from "./contexts/AuthContext";
 import { SearchProvider } from "./contexts/SearchContext";
+import { UserProvider } from "./contexts/adminFindContext/findUserContext";
 
 function App() {
   return (
     <>
       <BrowserRouter>
-        <SearchProvider>
-          <ThemeProvider>
-            <AuthProvider>
-              <Router />
-            </AuthProvider>
-          </ThemeProvider>
-        </SearchProvider>
+        <UserProvider>
+          <SearchProvider>
+            <ThemeProvider>
+              <AuthProvider>
+                <Router />
+              </AuthProvider>
+            </ThemeProvider>
+          </SearchProvider>
+        </UserProvider>
       </BrowserRouter>
     </>
   );

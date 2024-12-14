@@ -30,3 +30,18 @@ export const fetchSearchSong = async ({ title, page = 1, limit = 5 }) => {
     throw error;
   }
 };
+
+export const fetchCreateSong = async (songData) => {
+  try {
+    const response = await apiService.post("/admin/songs", songData);
+    if (response.success) {
+      console.log("Song created successfully:", response.data.song);
+      return response;
+    } else {
+      throw new Error(response.message || "Failed to create song");
+    }
+  } catch (error) {
+    console.error("Error creating song:", error.message);
+    throw error;
+  }
+};

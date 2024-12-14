@@ -8,6 +8,8 @@ import {
   Grid,
   Snackbar,
   Alert,
+  IconButton,
+  useTheme,
 } from "@mui/material";
 import {
   fetchUserProfile,
@@ -16,10 +18,15 @@ import {
   cancelSubscription,
   fetchChangePassword,
 } from "../services/profileService";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 const ProfilePage = () => {
   const [loading, setLoading] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
   const [editMode, setEditMode] = useState(false);
+  const [oldPasswordVisible, setOldPasswordVisible] = useState(false);
+  const [newPasswordVisible, setNewPasswordVisible] = useState(false);
+  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
+  const [passwordMismatchError, setPasswordMismatchError] = useState(false);
   const [updatedProfile, setUpdatedProfile] = useState({
     username: "",
     email: "",
@@ -34,7 +41,13 @@ const ProfilePage = () => {
     message: "",
     severity: "success",
   });
-
+  const [remainingTime, setRemainingTime] = useState({
+    remainingDays: 0,
+    remainingHours: 0,
+    remainingMinutes: 0,
+    remainingSeconds: 0,
+  });
+  const theme = useTheme();
   useEffect(() => {
     const loadUserProfile = async () => {
       setLoading(true);
@@ -73,9 +86,30 @@ const ProfilePage = () => {
   };
   const handlePasswordInputChange = (e) => {
     const { name, value } = e.target;
-    setPasswordData((prev) => ({ ...prev, [name]: value }));
+    setPasswordData((prev) => {
+      const updatedData = { ...prev, [name]: value };
+      if (name === "newPassword" || name === "confirmPassword") {
+        if (updatedData.newPassword !== updatedData.confirmPassword) {
+          setPasswordMismatchError(true);
+        } else {
+          setPasswordMismatchError(false);
+        }
+      }
+
+      return updatedData;
+    });
+  };
+  const handlePasswordVisibilityToggle = (field) => {
+    if (field === "oldPassword") {
+      setOldPasswordVisible((prev) => !prev);
+    } else if (field === "newPassword") {
+      setNewPasswordVisible((prev) => !prev);
+    } else if (field === "confirmPassword") {
+      setConfirmPasswordVisible((prev) => !prev);
+    }
   };
   const handleChangePassword = async () => {
+    console.log("Password Data Before Send:", passwordData);
     setLoading(true);
     try {
       await fetchChangePassword(
@@ -117,11 +151,20 @@ const ProfilePage = () => {
       const userData = await upgradeSubscription(userProfile._id);
       console.log("Dữ liệu sau khi nâng cấp:", userData);
 
-      if (userData && userData.remainingDays) {
+      if (userData && userData.user) {
+        const {
+          remainingDays,
+          remainingHours,
+          remainingMinutes,
+          remainingSeconds,
+        } = userData.user;
         setUserProfile((prev) => ({
           ...prev,
           subscriptionType: "Premium",
-          remainingDays: userData.remainingDays,
+          remainingDays,
+          remainingHours,
+          remainingMinutes,
+          remainingSeconds,
         }));
       } else {
         const updatedUserData = await fetchUserProfile();
@@ -172,7 +215,7 @@ const ProfilePage = () => {
   if (!userProfile) {
     return (
       <Typography color="error" sx={{ textAlign: "center", marginTop: "20px" }}>
-        Không thể tải thông tin người dùng.
+        Loading...
       </Typography>
     );
   }
@@ -231,7 +274,10 @@ const ProfilePage = () => {
                   <Typography sx={{ marginTop: 2 }}>
                     Sẽ hết hạn trong:{" "}
                     <b style={{ color: "#1e90ff" }}>
-                      {userProfile.remainingDays} ngày
+                      {userProfile.remainingDays} ngày,{" "}
+                      {userProfile.remainingHours} giờ,{" "}
+                      {userProfile.remainingMinutes} phút,{" "}
+                      {userProfile.remainingSeconds} giây
                     </b>
                   </Typography>
                   <Button
@@ -348,36 +394,120 @@ const ProfilePage = () => {
           <Typography variant="h5" sx={{ marginBottom: 2 }}>
             Đổi Mật Khẩu
           </Typography>
-          <TextField
-            label="Mật khẩu cũ"
-            name="oldPassword"
-            type="password"
-            value={passwordData.oldPassword}
-            onChange={handlePasswordInputChange}
-            fullWidth
-            variant="outlined"
-            sx={{ backgroundColor: "#121212", marginBottom: "16px" }}
-          />
-          <TextField
-            label="Mật khẩu mới"
-            name="newPassword"
-            type="password"
-            value={passwordData.newPassword}
-            onChange={handlePasswordInputChange}
-            fullWidth
-            variant="outlined"
-            sx={{ backgroundColor: "#121212", marginBottom: "16px" }}
-          />
-          <TextField
-            label="Xác nhận mật khẩu mới"
-            name="confirmPassword"
-            type="password"
-            value={passwordData.confirmPassword}
-            onChange={handlePasswordInputChange}
-            fullWidth
-            variant="outlined"
-            sx={{ backgroundColor: "#121212", marginBottom: "16px" }}
-          />
+          <Box sx={{ position: "relative" }}>
+            <TextField
+              label="Mật khẩu cũ"
+              name="oldPassword"
+              type={oldPasswordVisible ? "text" : "password"}
+              value={passwordData.oldPassword}
+              onChange={handlePasswordInputChange}
+              fullWidth
+              variant="outlined"
+              sx={{
+                backgroundColor:
+                  theme.palette.mode === "dark" ? "#121212" : "#ffffff",
+                marginBottom: "16px",
+                input: { color: theme.palette.text.primary }, // Màu chữ của input
+                "& .MuiInputLabel-root": { color: theme.palette.text.primary }, // Màu chữ của label
+                "& .MuiOutlinedInput-root": {
+                  "& fieldset": {
+                    borderColor: theme.palette.text.primary, // Màu viền cho chế độ sáng/tối
+                  },
+                },
+              }}
+            />
+            <IconButton
+              onClick={() => handlePasswordVisibilityToggle("oldPassword")}
+              sx={{
+                position: "absolute",
+                top: "50%",
+                right: "8px",
+                transform: "translateY(-50%)",
+                color: theme.palette.text.primary, // Màu của icon
+              }}
+            >
+              {oldPasswordVisible ? <VisibilityOff /> : <Visibility />}
+            </IconButton>
+          </Box>
+
+          {/* Mật khẩu mới */}
+          <Box sx={{ position: "relative" }}>
+            <TextField
+              label="Mật khẩu mới"
+              name="newPassword"
+              type={newPasswordVisible ? "text" : "password"}
+              value={passwordData.newPassword}
+              onChange={handlePasswordInputChange}
+              fullWidth
+              variant="outlined"
+              sx={{
+                backgroundColor:
+                  theme.palette.mode === "dark" ? "#121212" : "#ffffff",
+                marginBottom: "16px",
+                input: { color: theme.palette.text.primary },
+                "& .MuiInputLabel-root": { color: theme.palette.text.primary },
+                "& .MuiOutlinedInput-root": {
+                  "& fieldset": {
+                    borderColor: theme.palette.text.primary,
+                  },
+                },
+              }}
+            />
+            <IconButton
+              onClick={() => handlePasswordVisibilityToggle("newPassword")}
+              sx={{
+                position: "absolute",
+                top: "50%",
+                right: "8px",
+                transform: "translateY(-50%)",
+                color: theme.palette.text.primary,
+              }}
+            >
+              {newPasswordVisible ? <VisibilityOff /> : <Visibility />}
+            </IconButton>
+          </Box>
+
+          {/* Xác nhận mật khẩu mới */}
+          <Box sx={{ position: "relative" }}>
+            <TextField
+              label="Xác nhận mật khẩu mới"
+              name="confirmPassword"
+              type={confirmPasswordVisible ? "text" : "password"}
+              value={passwordData.confirmPassword}
+              onChange={handlePasswordInputChange}
+              fullWidth
+              variant="outlined"
+              error={passwordMismatchError}
+              helperText={
+                passwordMismatchError ? "Mật khẩu xác nhận không khớp" : ""
+              }
+              sx={{
+                backgroundColor:
+                  theme.palette.mode === "dark" ? "#121212" : "#ffffff",
+                marginBottom: "16px",
+                input: { color: theme.palette.text.primary },
+                "& .MuiInputLabel-root": { color: theme.palette.text.primary },
+                "& .MuiOutlinedInput-root": {
+                  "& fieldset": {
+                    borderColor: theme.palette.text.primary,
+                  },
+                },
+              }}
+            />
+            <IconButton
+              onClick={() => handlePasswordVisibilityToggle("confirmPassword")}
+              sx={{
+                position: "absolute",
+                top: "50%",
+                right: "8px",
+                transform: "translateY(-50%)",
+                color: theme.palette.text.primary,
+              }}
+            >
+              {confirmPasswordVisible ? <VisibilityOff /> : <Visibility />}
+            </IconButton>
+          </Box>
+
           <Button
             variant="contained"
             sx={{
@@ -386,6 +516,7 @@ const ProfilePage = () => {
               "&:hover": { backgroundColor: "#388e3c" },
             }}
             onClick={handleChangePassword}
+            disabled={passwordMismatchError}
           >
             Đổi mật khẩu
           </Button>

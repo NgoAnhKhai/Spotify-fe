@@ -25,6 +25,7 @@ import {
   fetchPlaylistUser,
   fetchRemoveSongToPlaylist,
 } from "../../services/playlistService";
+import ArtistSkeleton from "../../components/skeleton/ArtistSkeleton";
 
 const ArtistDetailPage = () => {
   const { id } = useParams();
@@ -76,7 +77,9 @@ const ArtistDetailPage = () => {
     loadArtist();
     loadUserPlaylists();
   }, [id, setPlaylist]);
-
+  if (loading) {
+    return <ArtistSkeleton />;
+  }
   if (!artist) {
     return <div>{error}</div>;
   }

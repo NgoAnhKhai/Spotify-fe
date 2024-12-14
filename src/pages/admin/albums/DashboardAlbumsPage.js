@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import MainHeader from "../../../layout/MainHeader";
+
 import {
   Table,
   TableBody,
@@ -25,7 +25,6 @@ import {
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-
 import { useNavigate } from "react-router-dom";
 import { fetchGetAllAlbums } from "../../../services/adminServices.js/AlbumsAdminServices.js/fetchGetAllAlbums";
 import { fetchUpdateAlbums } from "../../../services/adminServices.js/AlbumsAdminServices.js/fetchUpdateAlbums";
@@ -210,7 +209,6 @@ const DashboardAlbumsPage = () => {
 
   return (
     <div>
-      <MainHeader />
       <div className="dashboard-container">
         <TableContainer component={Paper}>
           <Table sx={{ borderCollapse: "collapse" }}>
@@ -277,8 +275,9 @@ const DashboardAlbumsPage = () => {
                 <TableCell
                   sx={{
                     border: "1px solid #ddd",
+                    padding: "8px",
+                    fontWeight: "bold",
                     textAlign: "center",
-                    cursor: "pointer",
                   }}
                 >
                   Title
@@ -286,8 +285,9 @@ const DashboardAlbumsPage = () => {
                 <TableCell
                   sx={{
                     border: "1px solid #ddd",
+                    padding: "8px",
+                    fontWeight: "bold",
                     textAlign: "center",
-                    cursor: "pointer",
                   }}
                 >
                   Release Date
@@ -295,8 +295,9 @@ const DashboardAlbumsPage = () => {
                 <TableCell
                   sx={{
                     border: "1px solid #ddd",
+                    padding: "8px",
+                    fontWeight: "bold",
                     textAlign: "center",
-                    cursor: "pointer",
                   }}
                 >
                   Cover Image URL
@@ -304,8 +305,9 @@ const DashboardAlbumsPage = () => {
                 <TableCell
                   sx={{
                     border: "1px solid #ddd",
+                    padding: "8px",
+                    fontWeight: "bold",
                     textAlign: "center",
-                    cursor: "pointer",
                   }}
                 >
                   Songs
@@ -313,8 +315,9 @@ const DashboardAlbumsPage = () => {
                 <TableCell
                   sx={{
                     border: "1px solid #ddd",
+                    padding: "8px",
+                    fontWeight: "bold",
                     textAlign: "center",
-                    cursor: "pointer",
                   }}
                 >
                   Actions

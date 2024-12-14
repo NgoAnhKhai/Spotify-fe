@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import MainHeader from "../../../layout/MainHeader";
+
 import {
   Table,
   TableBody,
@@ -51,11 +51,10 @@ const DashboardSongsPage = () => {
   const openMenu = Boolean(anchorEl);
   const navigate = useNavigate();
 
-  // Load songs from the server
   const loadSongs = async (currentPage = 1) => {
     setLoading(true);
     try {
-      const data = await fetchGetAllSongs(currentPage, 5); // Lấy 10 bài hát mỗi lần
+      const data = await fetchGetAllSongs(currentPage, 5);
       setSongs(data.songs);
       setTotalPages(data.pagination.totalPages);
     } catch (error) {
@@ -119,6 +118,9 @@ const DashboardSongsPage = () => {
 
       if (editedURL !== songToEdit.URL) {
         updatedSong.URL = editedURL;
+      }
+      if (songToEdit.coverImageURL) {
+        updatedSong.coverImageURL = songToEdit.coverImageURL;
       }
 
       if (Object.keys(updatedSong).length === 0) {
@@ -209,7 +211,6 @@ const DashboardSongsPage = () => {
 
   return (
     <div>
-      <MainHeader />
       <div className="dashboard-container">
         <TableContainer component={Paper}>
           <Table sx={{ borderCollapse: "collapse" }}>
@@ -276,8 +277,9 @@ const DashboardSongsPage = () => {
                 <TableCell
                   sx={{
                     border: "1px solid #ddd",
+                    padding: "8px",
+                    fontWeight: "bold",
                     textAlign: "center",
-                    cursor: "pointer",
                   }}
                 >
                   Title
@@ -285,8 +287,9 @@ const DashboardSongsPage = () => {
                 <TableCell
                   sx={{
                     border: "1px solid #ddd",
+                    padding: "8px",
+                    fontWeight: "bold",
                     textAlign: "center",
-                    cursor: "pointer",
                   }}
                 >
                   Duration
@@ -294,8 +297,9 @@ const DashboardSongsPage = () => {
                 <TableCell
                   sx={{
                     border: "1px solid #ddd",
+                    padding: "8px",
+                    fontWeight: "bold",
                     textAlign: "center",
-                    cursor: "pointer",
                   }}
                 >
                   Popularity
@@ -303,8 +307,9 @@ const DashboardSongsPage = () => {
                 <TableCell
                   sx={{
                     border: "1px solid #ddd",
+                    padding: "8px",
+                    fontWeight: "bold",
                     textAlign: "center",
-                    cursor: "pointer",
                   }}
                 >
                   URL
@@ -312,8 +317,9 @@ const DashboardSongsPage = () => {
                 <TableCell
                   sx={{
                     border: "1px solid #ddd",
+                    padding: "8px",
+                    fontWeight: "bold",
                     textAlign: "center",
-                    cursor: "pointer",
                   }}
                 >
                   Actions
@@ -421,6 +427,15 @@ const DashboardSongsPage = () => {
               fullWidth
               value={editedURL}
               onChange={(e) => setEditedURL(e.target.value)}
+              sx={{ marginBottom: "20px" }}
+            />
+            <TextField
+              label="Cover Image URL"
+              fullWidth
+              value={songToEdit?.coverImageURL ?? ""}
+              onChange={(e) =>
+                setSongToEdit({ ...songToEdit, coverImageURL: e.target.value })
+              }
               sx={{ marginBottom: "20px" }}
             />
           </DialogContent>

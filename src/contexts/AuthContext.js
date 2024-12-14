@@ -7,11 +7,13 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
     if (token) {
       try {
         const decodedUser = jwtDecode(token);
-        if (decodedUser.exp * 1000 < Date.now()) {
+        if (role !== "admin" && decodedUser.exp * 1000 < Date.now()) {
           localStorage.removeItem("token");
+          localStorage.removeItem("role");
           return null;
         }
         return decodedUser;

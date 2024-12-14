@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import "../../App.css";
+
 import {
   Box,
   Typography,
@@ -24,6 +24,7 @@ import {
   fetchAddSongToPlaylist,
   fetchPlaylistUser,
 } from "../../services/playlistService";
+import SkeletonLoaderSong from "../../components/skeleton/AllSongSkeleton";
 
 export default function MiddleContent() {
   const [songsData, setSongsData] = useState([]);
@@ -143,22 +144,7 @@ export default function MiddleContent() {
 
   // Khi đang tải dữ liệu
   if (loading) {
-    return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-          background:
-            theme.palette.mode === "dark"
-              ? "linear-gradient(to bottom, #1e90ff 15%, #000000)"
-              : "linear-gradient(to bottom, #f0f0f0 15%, #ffffff)",
-        }}
-      >
-        <CircularProgress sx={{ color: theme.palette.text.primary }} />
-      </Box>
-    );
+    return <SkeletonLoaderSong />;
   }
 
   // Khi có lỗi

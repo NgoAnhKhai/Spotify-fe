@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import { Snackbar, Alert } from "@mui/material";
 import {
   styled,
@@ -17,13 +17,11 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import HomeIcon from "@mui/icons-material/Home";
 import { useNavigate } from "react-router-dom";
-import { ThemeContext } from "../contexts/darkMode/ThemeProvider";
-import { useAuth } from "../contexts/AuthContext";
-import { Brightness4, Brightness7 } from "@mui/icons-material";
-import MusicNoteIcon from "@mui/icons-material/MusicNote";
+
 import { AdminPanelSettings as AdminIcon } from "@mui/icons-material";
-import { fetchSearchSong } from "../services/songService";
-import { useSearch } from "../contexts/SearchContext";
+import { useSearch } from "../../contexts/SearchContext";
+import { fetchFindUserByName } from "../../services/adminServices.js/UsersAdminServices.js/fetchFindUserByName";
+import { useAuth } from "../../contexts/AuthContext";
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -55,19 +53,18 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-export default function MainHeader() {
+export default function UserHeader() {
   const navigate = useNavigate();
-  const { darkMode, toggleDarkMode } = useContext(ThemeContext);
+
   const { user, signout } = useAuth();
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-
+  const { updateSearchResults } = useSearch();
   const open = Boolean(anchorEl);
 
-  const { updateSearchResults } = useSearch();
   const handleMenuClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -88,14 +85,15 @@ export default function MainHeader() {
   };
 
   const handleSearchKeyPress = async (event) => {
-    if (event.key === "Enter" && searchQuery.trim() !== "") {
-      navigate(`/songs?title=${encodeURIComponent(searchQuery)}`);
+    const query = String(searchQuery).trim();
 
+    if (event.key === "Enter" && query !== "") {
       try {
-        const results = await fetchSearchSong({ title: searchQuery });
-        if (results.songs && results.songs.length > 0) {
-          updateSearchResults(results.songs);
-          navigate("/songs");
+        const results = await fetchFindUserByName({ name: query });
+
+        if (results.user && results.user !== "") {
+          updateSearchResults(results.user);
+          navigate("/admin/dashboard/users");
         } else {
           setSnackbarMessage("Không có bài hát nào tìm thấy!");
           setSnackbarSeverity("error");
@@ -109,16 +107,7 @@ export default function MainHeader() {
       }
     }
   };
-  const handleMusicIconClick = () => {
-    if (!user) {
-      setSnackbarMessage("Please log in to listen to music.");
-      setSnackbarSeverity("warning");
-      setSnackbarOpen(true);
-      navigate("/login");
-    } else {
-      navigate("/songs");
-    }
-  };
+
   const handleAdminClick = () => {
     if (user && user.role === "admin") {
       navigate("/admin/dashboard/users");
@@ -151,17 +140,6 @@ export default function MainHeader() {
               alignItems: "center",
             }}
           >
-            {/* Icon Toggle Dark Mode */}
-            <IconButton
-              color="inherit"
-              onClick={toggleDarkMode}
-              sx={{
-                marginLeft: "16px",
-                color: "#ffffff",
-              }}
-            >
-              {darkMode ? <Brightness7 /> : <Brightness4 />}
-            </IconButton>
             <IconButton
               color="inherit"
               onClick={handleAdminClick}
@@ -225,21 +203,6 @@ export default function MainHeader() {
                     sx={{ paddingTop: "8px" }}
                   />
                 </Search>
-                <IconButton
-                  onClick={handleMusicIconClick}
-                  sx={{
-                    ml: 2,
-                    color: "#fff",
-                    backgroundColor: "#1f1f1f",
-                    borderRadius: "50%",
-                    "&:hover": {
-                      backgroundColor: "transparent",
-                      transform: "scale(1.1)",
-                    },
-                  }}
-                >
-                  <MusicNoteIcon sx={{ fontSize: "30px" }} />
-                </IconButton>
               </Box>
             </Box>
 

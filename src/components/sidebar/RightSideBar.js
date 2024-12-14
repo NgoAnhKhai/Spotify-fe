@@ -11,6 +11,7 @@ import {
   DialogActions,
   CircularProgress,
 } from "@mui/material";
+
 import styled from "styled-components";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
@@ -139,211 +140,217 @@ function RightSideBar() {
       variant="permanent"
       anchor="right"
     >
-      {/* Header */}
-      <Box sx={{ padding: "16px", textAlign: "center" }}>
-        <Button
-          onClick={toggleDrawerSize}
-          variant="h6"
-          component="div"
-          sx={{ borderRadius: "10px", fontWeight: "bold", color: "#fff" }}
-        >
-          Artist
-        </Button>
-      </Box>
-      <Divider sx={{ backgroundColor: "grey" }} />
+      <div className="RightSideBar">
+        {/* Header */}
+        <Box sx={{ padding: "16px", textAlign: "center" }}>
+          <Button
+            onClick={toggleDrawerSize}
+            variant="h6"
+            component="div"
+            sx={{ borderRadius: "10px", fontWeight: "bold", color: "#fff" }}
+          >
+            Artist
+          </Button>
+        </Box>
+        <Divider sx={{ backgroundColor: "grey" }} />
 
-      {user ? (
-        !id ? (
-          // Chưa click vào album (id chưa có)
+        {user ? (
+          !id ? (
+            // Chưa click vào album (id chưa có)
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: user ? "calc(100vh - 400px)" : "100vh",
+                backgroundColor: "#1e1e1e",
+                padding: "16px",
+                borderRadius: "15px",
+                mt: 2,
+              }}
+            >
+              <Typography
+                fontWeight="bold"
+                variant="body1"
+                sx={{ color: "white", textAlign: "center" }}
+              >
+                Chào mừng! Hãy thưởng thức âm nhạc của bạn.
+              </Typography>
+            </Box>
+          ) : (
+            // Đã click vào album (có id), hiển thị info artist
+            album &&
+            album.artistID && (
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  height: "calc(100vh - 400px)",
+                  backgroundColor: "#1e1e1e",
+                  padding: "16px",
+                  borderRadius: "15px",
+                  mt: 2,
+                  textAlign: "center",
+                }}
+              >
+                {album.artistID.imageURL ? (
+                  <Box
+                    component="img"
+                    src={album.artistID.imageURL}
+                    alt={album.artistID.name}
+                    sx={{
+                      width: "120px",
+                      height: "120px",
+                      borderRadius: "50%",
+                      objectFit: "cover",
+                      mb: 2,
+                    }}
+                  />
+                ) : (
+                  <Box
+                    sx={{
+                      width: "120px",
+                      height: "120px",
+                      borderRadius: "50%",
+                      backgroundColor: "#333",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      mb: 2,
+                    }}
+                  >
+                    <Typography>Không có ảnh</Typography>
+                  </Box>
+                )}
+
+                <Typography
+                  variant="h5"
+                  sx={{
+                    color: "white",
+                    fontWeight: "bold",
+                  }}
+                >
+                  <Link
+                    to={`/artists/${album.artistID._id}`}
+                    style={{
+                      color: "white",
+                      textDecoration: "none",
+                    }}
+                  >
+                    {album.artistID.name || "Unknown Artist"}
+                  </Link>
+                </Typography>
+                {album.artistID.role && (
+                  <Typography variant="body2" sx={{ color: "grey", mt: 1 }}>
+                    Vai trò: {album.artistID.role}
+                  </Typography>
+                )}
+                {album.artistID.genre && (
+                  <Typography variant="body2" sx={{ color: "grey", mt: 1 }}>
+                    Thể loại: {album.artistID.genre}
+                  </Typography>
+                )}
+                <Typography>Start Year: {artist.startYear}</Typography>
+                <Typography>Difficulties: {artist.difficulties}</Typography>
+                <Button
+                  variant="contained"
+                  sx={{
+                    backgroundColor: "#fff",
+                    color: "#000",
+                    fontWeight: "bold",
+                    textTransform: "none",
+                    mt: 2,
+                    "&:hover": {
+                      backgroundColor: "#fff",
+                      color: "#000",
+                    },
+                  }}
+                >
+                  Follow
+                </Button>
+              </Box>
+            )
+          )
+        ) : (
           <Box
             sx={{
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
-              height: user ? "calc(100vh - 400px)" : "100vh",
+              height: album ? "calc(100vh - 400px)" : "100vh",
               backgroundColor: "#1e1e1e",
               padding: "16px",
               borderRadius: "15px",
               mt: 2,
             }}
           >
-            <Typography
-              fontWeight="bold"
-              variant="body1"
-              sx={{ color: "white", textAlign: "center" }}
-            >
-              Chào mừng! Hãy thưởng thức âm nhạc của bạn.
-            </Typography>
-          </Box>
-        ) : (
-          // Đã click vào album (có id), hiển thị info artist
-          album &&
-          album.artistID && (
             <Box
               sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                height: "calc(100vh - 400px)",
                 backgroundColor: "#1e1e1e",
                 padding: "16px",
                 borderRadius: "15px",
-                mt: 2,
                 textAlign: "center",
               }}
             >
-              {album.artistID.imageURL ? (
-                <Box
-                  component="img"
-                  src={album.artistID.imageURL}
-                  alt={album.artistID.name}
-                  sx={{
-                    width: "120px",
-                    height: "120px",
-                    borderRadius: "50%",
-                    objectFit: "cover",
-                    mb: 2,
-                  }}
-                />
-              ) : (
-                <Box
-                  sx={{
-                    width: "120px",
-                    height: "120px",
-                    borderRadius: "50%",
-                    backgroundColor: "#333",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    mb: 2,
-                  }}
-                >
-                  <Typography>Không có ảnh</Typography>
-                </Box>
-              )}
-
               <Typography
-                variant="h5"
-                sx={{
-                  color: "white",
-                  fontWeight: "bold",
-                }}
+                fontWeight="bold"
+                variant="body1"
+                sx={{ marginBottom: "16px", color: "white" }}
               >
-                <Link
-                  to={`/artists/${album.artistID._id}`}
-                  style={{
-                    color: "white",
-                    textDecoration: "none",
-                  }}
-                >
-                  {album.artistID.name || "Unknown Artist"}
-                </Link>
+                Hãy mở bài nhạc và tận hưởng nào
               </Typography>
-              {album.artistID.role && (
-                <Typography variant="body2" sx={{ color: "grey", mt: 1 }}>
-                  Vai trò: {album.artistID.role}
-                </Typography>
-              )}
-              {album.artistID.genre && (
-                <Typography variant="body2" sx={{ color: "grey", mt: 1 }}>
-                  Thể loại: {album.artistID.genre}
-                </Typography>
-              )}
-              <Typography>Start Year: {artist.startYear}</Typography>
-              <Typography>Difficulties: {artist.difficulties}</Typography>
               <Button
-                variant="contained"
                 sx={{
-                  backgroundColor: "#fff",
-                  color: "#000",
+                  backgroundColor: "white",
+                  color: "black",
+                  width: "100%",
                   fontWeight: "bold",
-                  textTransform: "none",
-                  mt: 2,
-                  "&:hover": {
-                    backgroundColor: "#fff",
-                    color: "#000",
-                  },
                 }}
+                variant="contained"
+                color="primary"
+                onClick={() => setOpen(true)}
               >
-                Follow
+                Trước tiên hãy đăng nhập
               </Button>
             </Box>
-          )
-        )
-      ) : (
+          </Box>
+        )}
+
+        {/* Dialog */}
+        <Dialog open={open} onClose={() => setOpen(false)}>
+          <DialogTitle sx={{ fontWeight: "bold" }}>
+            Đăng nhập để tiếp tục
+          </DialogTitle>
+          <DialogContent>
+            <Typography>
+              Vui lòng đăng nhập để truy cập chức năng này.
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <StyleButtonHold onClick={() => setOpen(false)} color="primary">
+              Để sau
+            </StyleButtonHold>
+            <StyledButton onClick={() => navigateLogin()}>
+              Đăng nhập
+            </StyledButton>
+          </DialogActions>
+        </Dialog>
+
+        {/* Resize handle */}
         <Box
           sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            height: album ? "calc(100vh - 400px)" : "100vh",
-            backgroundColor: "#1e1e1e",
-            padding: "16px",
-            borderRadius: "15px",
-            mt: 2,
+            position: "absolute",
+            left: 0,
+            top: "0",
+            bottom: 0,
+            width: "5px",
+            cursor: "ew-resize",
+            backgroundColor: "#121212",
           }}
-        >
-          <Box
-            sx={{
-              backgroundColor: "#1e1e1e",
-              padding: "16px",
-              borderRadius: "15px",
-              textAlign: "center",
-            }}
-          >
-            <Typography
-              fontWeight="bold"
-              variant="body1"
-              sx={{ marginBottom: "16px", color: "white" }}
-            >
-              Hãy mở bài nhạc và tận hưởng nào
-            </Typography>
-            <Button
-              sx={{
-                backgroundColor: "white",
-                color: "black",
-                width: "100%",
-                fontWeight: "bold",
-              }}
-              variant="contained"
-              color="primary"
-              onClick={() => setOpen(true)}
-            >
-              Trước tiên hãy đăng nhập
-            </Button>
-          </Box>
-        </Box>
-      )}
-
-      {/* Dialog */}
-      <Dialog open={open} onClose={() => setOpen(false)}>
-        <DialogTitle sx={{ fontWeight: "bold" }}>
-          Đăng nhập để tiếp tục
-        </DialogTitle>
-        <DialogContent>
-          <Typography>Vui lòng đăng nhập để truy cập chức năng này.</Typography>
-        </DialogContent>
-        <DialogActions>
-          <StyleButtonHold onClick={() => setOpen(false)} color="primary">
-            Để sau
-          </StyleButtonHold>
-          <StyledButton onClick={() => navigateLogin()}>Đăng nhập</StyledButton>
-        </DialogActions>
-      </Dialog>
-
-      {/* Resize handle */}
-      <Box
-        sx={{
-          position: "absolute",
-          left: 0,
-          top: "0",
-          bottom: 0,
-          width: "5px",
-          cursor: "ew-resize",
-          backgroundColor: "#121212",
-        }}
-        onMouseDown={startResize}
-      />
+          onMouseDown={startResize}
+        />
+      </div>
     </Drawer>
   );
 }
