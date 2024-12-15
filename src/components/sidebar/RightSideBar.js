@@ -10,12 +10,18 @@ import {
   DialogContent,
   DialogActions,
   useMediaQuery,
+  Alert,
+  Snackbar,
 } from "@mui/material";
 import { ArrowLeft as ArrowLeftIcon } from "@mui/icons-material";
 import styled from "styled-components";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { fetchAlbumById } from "../../services/albumService";
+import {
+  fetchFollowArtist,
+  fetchUnfollowArtist,
+} from "../../services/favoriteArtists";
 
 function RightSideBar() {
   const [drawerWidth, setDrawerWidth] = useState(240);
@@ -39,12 +45,9 @@ function RightSideBar() {
     const loadAlbum = async () => {
       try {
         const albumData = await fetchAlbumById(id);
+        console.log("albumData", albumData);
         setAlbum(albumData);
         setAristID(albumData.artistID.description);
-        console.log(
-          "albumData.artistID.description",
-          albumData.artistID.description
-        );
 
         setSong(albumData.listSong);
         setLoading(false);
@@ -259,22 +262,6 @@ function RightSideBar() {
                   )}
                   <Typography>Start Year: {artist.startYear}</Typography>
                   <Typography>Difficulties: {artist.difficulties}</Typography>
-                  <Button
-                    variant="contained"
-                    sx={{
-                      backgroundColor: "#fff",
-                      color: "#000",
-                      fontWeight: "bold",
-                      textTransform: "none",
-                      mt: 2,
-                      "&:hover": {
-                        backgroundColor: "#fff",
-                        color: "#000",
-                      },
-                    }}
-                  >
-                    Follow
-                  </Button>
                 </Box>
               )
             )

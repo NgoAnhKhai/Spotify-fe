@@ -26,6 +26,10 @@ import {
   fetchRemoveSongToPlaylist,
 } from "../../services/playlistService";
 import ArtistSkeleton from "../../components/skeleton/ArtistSkeleton";
+import {
+  fetchFollowArtist,
+  fetchUnfollowArtist,
+} from "../../services/favoriteArtists";
 
 const ArtistDetailPage = () => {
   const { id } = useParams();
@@ -44,6 +48,7 @@ const ArtistDetailPage = () => {
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [selectedPlaylists, setSelectedPlaylists] = useState([]);
   const [artistDescription, setArtistDescription] = useState([]);
+  const [isFollowing, setIsFollowing] = useState(false);
   const songListRef = useRef(null);
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
@@ -64,7 +69,10 @@ const ArtistDetailPage = () => {
     const loadArtist = async () => {
       try {
         const artistData = await fetchArtistById(id);
+        console.log("dat", artistData);
+
         setArtistDescription(artistData.artist.description);
+        setIsFollowing(artistData.isFollowed);
         setArtist(artistData.artist);
         setPlaylist(artistData.artist.songs || []);
         setLoading(false);
@@ -98,7 +106,28 @@ const ArtistDetailPage = () => {
   if (!artist) {
     return <div>{error}</div>;
   }
-
+  const handleFollowToggle = async () => {
+    try {
+      if (isFollowing) {
+        await fetchUnfollowArtist(artist._id);
+        setIsFollowing(false);
+        setArtist({ ...artist, followersCount: artist.followersCount - 1 });
+        setSnackbarMessage("Bạn đã bỏ theo dõi nghệ sĩ!");
+        setSnackbarSeverity("info");
+      } else {
+        await fetchFollowArtist(artist._id);
+        setIsFollowing(true);
+        setArtist({ ...artist, followersCount: artist.followersCount + 1 });
+        setSnackbarMessage("Bạn đã theo dõi nghệ sĩ!");
+        setSnackbarSeverity("success");
+      }
+    } catch (error) {
+      setSnackbarMessage("Đã xảy ra lỗi khi thay đổi trạng thái theo dõi!");
+      setSnackbarSeverity("error");
+    } finally {
+      setSnackbarOpen(true);
+    }
+  };
   const handleSongClick = (songID) => {
     const songData = artist.songs.find((song) => song._id === songID);
     setCurrentSong(songData);
@@ -214,8 +243,8 @@ const ArtistDetailPage = () => {
         color: theme.palette.text.primary,
         minHeight: "110vh",
         height: "100%",
-        width: isMobile ? "95%" : "100%",
-        marginRight: isMobile ? "5%" : "",
+        width: isMobile ? "100%" : "100%",
+        marginRight: isMobile ? "22%" : "",
         borderRadius: "15px",
         display: "flex",
         flexDirection: "column",
@@ -324,8 +353,9 @@ const ArtistDetailPage = () => {
                 color: "#000",
               },
             }}
+            onClick={handleFollowToggle}
           >
-            Follow
+            {isFollowing ? "Unfollow" : "Follow"}
           </Button>
         </Box>
       </Box>

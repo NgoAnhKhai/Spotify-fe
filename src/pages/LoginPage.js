@@ -36,7 +36,7 @@ const LoginPage = () => {
       }
     } catch (err) {
       setLoading(false);
-      setError(err.response?.message || "Đăng nhập thất bại!");
+      setError(err.response?.message || "Tài Khoản Hoặc Mật Khẩu Sai!");
     } finally {
       setLoading(false);
     }
@@ -89,7 +89,7 @@ const LoginPage = () => {
         </Typography>
         <form onSubmit={handleSubmit}>
           <TextField
-            label="Email hoặc tên người dùng"
+            label="Email@yourmail.com"
             fullWidth
             margin="normal"
             value={email}

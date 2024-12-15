@@ -141,7 +141,7 @@ function LeftSideBar() {
         await fetchDeletePlaylist(playlistToDelete);
         setPlaylists(
           playlists.filter((playlist) => playlist._id !== playlistToDelete)
-        ); // Remove the playlist from the list
+        );
         setOpenDeleteDialog(false);
       }
     } catch (error) {
@@ -181,8 +181,7 @@ function LeftSideBar() {
     border: "1px solid #fff",
     borderRadius: "25px",
     padding: "8px 16px",
-    position: "fixed",
-    transform: "translateY(-50%)",
+    top: "1px",
     textTransform: "none",
     transition: "all 0.3s ease",
     "&:hover": {

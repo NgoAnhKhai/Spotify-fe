@@ -15,6 +15,7 @@ import {
   Avatar,
   Button,
 } from "@mui/material";
+import FavoriteIcon from "@mui/icons-material/Favorite";
 import SearchIcon from "@mui/icons-material/Search";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import HomeIcon from "@mui/icons-material/Home";
@@ -95,7 +96,7 @@ export default function MainHeader() {
 
   const handleMenuClose = () => {
     setAnchorEl(null);
-    navigate("users/me/profile");
+    navigate(`users/${user.userId}/profile`);
   };
 
   const handleLogout = () => {
@@ -199,6 +200,22 @@ export default function MainHeader() {
 
             <IconButton
               color="inherit"
+              sx={{
+                color: "#fff",
+                marginLeft: "16px",
+                fontSize: "30px",
+                "&:hover": {
+                  transform: "scale(1.1)",
+                },
+              }}
+              className="heart-icon-button"
+              onClick={() => navigate("/users/favorites")}
+            >
+              <FavoriteIcon />
+            </IconButton>
+
+            <IconButton
+              color="inherit"
               onClick={handleAdminClick}
               sx={{
                 color: "#fff",
@@ -281,7 +298,7 @@ export default function MainHeader() {
                 <IconButton
                   onClick={handleMusicIconClick}
                   sx={{
-                    ml: isMobile ? 16 : 2,
+                    ml: isMobile ? 10 : 2,
                     color: "#fff",
                     backgroundColor: "#1f1f1f",
                     borderRadius: "50%",

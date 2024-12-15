@@ -1,11 +1,11 @@
 import apiService from "../api/apiService";
 
-export const fetchUserProfile = async () => {
+export const fetchUserProfile = async (id) => {
   try {
     const token = localStorage.getItem("token");
     if (!token) throw new Error("Token không tồn tại.");
 
-    const response = await apiService.get(`/users/me/profile`, {
+    const response = await apiService.get(`/users/${id}/profile`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

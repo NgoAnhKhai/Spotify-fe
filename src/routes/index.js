@@ -19,6 +19,7 @@ import DashboardArtistPage from "../pages/admin/Artists/DashboardArtistPage";
 import DashboardGenresPage from "../pages/admin/Genres/DashboardGenresPage";
 import DashboardSongsPage from "../pages/admin/Songs/DashboardSongsPage";
 import DashboardAlbumsPage from "../pages/admin/albums/DashboardAlbumsPage";
+import FavoritePage from "../pages/FavoritePage";
 
 function Router() {
   return (
@@ -72,6 +73,7 @@ function Router() {
           <Route path="/songs" element={<AllSongsPage />} />
           <Route path="/me/playlist/:id" element={<PlaylistPage />} />
           <Route path="/artists/:id" element={<ArtistPage />} />
+          <Route path="/users/favorites" element={<FavoritePage />} />
           <Route
             path="/album/:id"
             element={
@@ -81,7 +83,7 @@ function Router() {
             }
           />
           <Route
-            path="users/me/profile"
+            path="users/:id/profile"
             element={
               <ProtectedRoute>
                 <ProfilePage />

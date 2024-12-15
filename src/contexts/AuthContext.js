@@ -8,6 +8,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
+
     if (token) {
       try {
         const decodedUser = jwtDecode(token);

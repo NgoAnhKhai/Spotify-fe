@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   Box,
   Typography,
@@ -43,6 +43,7 @@ const MiddleContent = () => {
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [selectedPlaylists, setSelectedPlaylists] = useState([]);
   const [isMobile, setIsMobile] = useState(false);
+  const navigate = useNavigate();
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 600);
@@ -190,7 +191,9 @@ const MiddleContent = () => {
         : [...prev, playlistID]
     );
   };
-
+  const handleArtistClick = (artistId) => {
+    navigate(`/artists/${artistId}`);
+  };
   return (
     <Box
       className="custom-scroll"
@@ -260,7 +263,11 @@ const MiddleContent = () => {
             >
               {album.title}
             </Typography>
-            <Typography variant="h6" sx={{ fontStyle: "italic" }}>
+            <Typography
+              onClick={() => handleArtistClick(album.artistID?._id)}
+              variant="h6"
+              sx={{ fontStyle: "italic" }}
+            >
               {album.artistID?.name || "Unknown Artist"}
             </Typography>
             <Typography
@@ -327,7 +334,7 @@ const MiddleContent = () => {
                     <IconButton
                       sx={{ width: "5%", textAlign: "center" }}
                       onClick={(e) => {
-                        e.stopPropagation(); // Ngăn onClick lan ra cả dòng
+                        e.stopPropagation();
                         inPlaylist
                           ? handleOpenRemoveModal(song._id)
                           : handleOpenAddModal(song._id);

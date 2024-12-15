@@ -106,20 +106,19 @@ export const fetchRemoveSongToPlaylist = async (playlistId, songId) => {
     if (!token) {
       throw new Error("Authentication token is missing.");
     }
+
     const body = { songId };
 
-    const response = await apiService.post(
-      `/playlists/${playlistId}/remove`,
-      body,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const response = await apiService.delete(`/playlists/${playlistId}`, {
+      data: body,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
     return response;
   } catch (error) {
-    console.error("Error remove song to playlist:", error.message);
+    console.error("Error removing song from playlist:", error.message);
     throw error;
   }
 };

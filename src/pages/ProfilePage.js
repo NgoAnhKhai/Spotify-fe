@@ -19,6 +19,7 @@ import {
   fetchChangePassword,
 } from "../services/profileService";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { useParams } from "react-router-dom";
 const ProfilePage = () => {
   const [loading, setLoading] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
@@ -27,7 +28,7 @@ const ProfilePage = () => {
   const [newPasswordVisible, setNewPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
   const [passwordMismatchError, setPasswordMismatchError] = useState(false);
-
+  const { id } = useParams();
   const [updatedProfile, setUpdatedProfile] = useState({
     username: "",
     email: "",
@@ -48,7 +49,7 @@ const ProfilePage = () => {
     const loadUserProfile = async () => {
       setLoading(true);
       try {
-        const userData = await fetchUserProfile();
+        const userData = await fetchUserProfile(id);
         setUserProfile(userData);
         setUpdatedProfile({
           username: userData.username,
@@ -62,7 +63,7 @@ const ProfilePage = () => {
     };
 
     loadUserProfile();
-  }, []);
+  }, [id]);
 
   const showSnackbar = (message, severity = "success") => {
     setSnackbar({ open: true, message, severity });
