@@ -27,6 +27,7 @@ const ProfilePage = () => {
   const [newPasswordVisible, setNewPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
   const [passwordMismatchError, setPasswordMismatchError] = useState(false);
+
   const [updatedProfile, setUpdatedProfile] = useState({
     username: "",
     email: "",
@@ -41,12 +42,7 @@ const ProfilePage = () => {
     message: "",
     severity: "success",
   });
-  const [remainingTime, setRemainingTime] = useState({
-    remainingDays: 0,
-    remainingHours: 0,
-    remainingMinutes: 0,
-    remainingSeconds: 0,
-  });
+  const isMobile = window.innerWidth <= 600;
   const theme = useTheme();
   useEffect(() => {
     const loadUserProfile = async () => {
@@ -220,7 +216,14 @@ const ProfilePage = () => {
     );
   }
   return (
-    <div className="containerProfile">
+    <div
+      className="containerProfile"
+      style={{
+        overflowY: "auto",
+        maxHeight: "90vh",
+        width: isMobile ? "80%" : "100%",
+      }}
+    >
       <Box
         sx={{
           padding: "24px",

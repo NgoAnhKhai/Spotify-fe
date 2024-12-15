@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
 import {
   Table,
@@ -23,15 +23,18 @@ import {
   MenuItem,
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import RefreshIcon from "@mui/icons-material/Refresh";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-
 import { useNavigate } from "react-router-dom";
 import { fetchGetAllArtist } from "../../../services/adminServices.js/ArtistAdminServices.js/fetchGetAllArtist";
 import { fetchDeleteArtist } from "../../../services/adminServices.js/ArtistAdminServices.js/fetchDeleteArtist";
 import { fetchUpdateArtist } from "../../../services/adminServices.js/ArtistAdminServices.js/fetchUpdateArtist";
+import ArtistHeader from "../../../components/headerAdmin/ArtistHeader";
+import { ArtistContext } from "../../../contexts/adminFindContext/findArtistContext";
 
 const DashboardArtistPage = () => {
+  const { artistName, setArtistName } = useContext(ArtistContext);
   const [artists, setArtists] = useState([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
@@ -52,7 +55,6 @@ const DashboardArtistPage = () => {
 
   const openMenu = Boolean(anchorEl);
   const navigate = useNavigate();
-  // Load users from the server
   const loadArtists = async (currentPage = 1) => {
     setLoading(true);
     try {
@@ -68,6 +70,12 @@ const DashboardArtistPage = () => {
 
   const handlePageChange = (event, value) => {
     setPage(value);
+  };
+
+  const handleRefresh = () => {
+    setArtistName(null);
+    setPage(1);
+    loadArtists(1);
   };
 
   // Open Edit Dialog
@@ -120,7 +128,6 @@ const DashboardArtistPage = () => {
       }
 
       try {
-        // Update artist details using fetchUpdateArtist
         await fetchUpdateArtist(artistToEdit._id, updatedProfile);
         setArtists((prevArtists) =>
           prevArtists.map((artist) => {
@@ -129,7 +136,9 @@ const DashboardArtistPage = () => {
               : artist;
           })
         );
-
+        if (artistName && artistName._id === artistToEdit._id) {
+          setArtistName({ ...artistName, ...updatedProfile });
+        }
         setSnackbarMessage("Artist updated successfully!");
         setSnackbarSeverity("success");
       } catch (error) {
@@ -142,8 +151,10 @@ const DashboardArtistPage = () => {
     }
   };
   useEffect(() => {
-    loadArtists(page);
-  }, [page]);
+    if (!artistName) {
+      loadArtists(page);
+    }
+  }, [artistName, page]);
 
   // Delete Artist
   const handleDeleteArtist = async () => {
@@ -199,7 +210,25 @@ const DashboardArtistPage = () => {
   };
   return (
     <div>
+      <ArtistHeader />
       <div className="dashboard-container">
+        {artistName && (
+          <Alert
+            severity="info"
+            action={
+              <IconButton
+                aria-label="refresh"
+                size="small"
+                onClick={handleRefresh}
+                color="inherit"
+              >
+                <RefreshIcon fontSize="inherit" />
+              </IconButton>
+            }
+          >
+            Showing results for: <strong>{artistName.name}</strong>
+          </Alert>
+        )}
         <TableContainer component={Paper}>
           <Table sx={{ borderCollapse: "collapse" }}>
             <TableHead>
@@ -329,6 +358,69 @@ const DashboardArtistPage = () => {
                 <TableRow>
                   <TableCell colSpan={7} sx={{ textAlign: "center" }}>
                     <CircularProgress />
+                  </TableCell>
+                </TableRow>
+              ) : artistName ? (
+                <TableRow>
+                  <TableCell
+                    sx={{ border: "1px solid #ddd", textAlign: "center" }}
+                  >
+                    1
+                  </TableCell>
+                  <TableCell
+                    sx={{ border: "1px solid #ddd", textAlign: "center" }}
+                  >
+                    {artistName.name}
+                  </TableCell>
+                  <TableCell
+                    sx={{ border: "1px solid #ddd", textAlign: "center" }}
+                  >
+                    {artistName.followersCount}
+                  </TableCell>
+                  <TableCell
+                    sx={{ border: "1px solid #ddd", textAlign: "center" }}
+                  >
+                    {Array.isArray(artistName.songs) &&
+                    artistName.songs.length > 0 ? (
+                      artistName.songs.map((song, index) => (
+                        <div key={index}>{song.title}</div>
+                      ))
+                    ) : (
+                      <span>No songs available</span>
+                    )}
+                  </TableCell>
+                  <TableCell
+                    sx={{ border: "1px solid #ddd", textAlign: "center" }}
+                  >
+                    {Array.isArray(artistName.albums) &&
+                    artistName.albums.length > 0 ? (
+                      artistName.albums.map((album, index) => (
+                        <div key={index}>{album.title}</div>
+                      ))
+                    ) : (
+                      <span>No albums available</span>
+                    )}
+                  </TableCell>
+                  <TableCell
+                    sx={{ border: "1px solid #ddd", textAlign: "center" }}
+                  >
+                    {artistName.role}
+                  </TableCell>
+                  <TableCell
+                    sx={{ border: "1px solid #ddd", textAlign: "center" }}
+                  >
+                    <IconButton
+                      color="primary"
+                      onClick={() => openEditDialogHandler(artistName)}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton
+                      color="secondary"
+                      onClick={() => openDeleteDialogHandler(artistName._id)}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
                   </TableCell>
                 </TableRow>
               ) : (

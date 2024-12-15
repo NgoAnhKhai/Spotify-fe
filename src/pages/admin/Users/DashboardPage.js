@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
 import {
   Table,
@@ -23,6 +23,7 @@ import {
   MenuItem,
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import RefreshIcon from "@mui/icons-material/Refresh";
 import EditIcon from "@mui/icons-material/Edit";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -32,10 +33,8 @@ import { updateUserProfile } from "../../../services/profileService";
 import { useNavigate } from "react-router-dom";
 import fetchAssignRole from "../../../services/adminServices.js/UsersAdminServices.js/fetchAssignRole";
 import fetchRevertToUser from "../../../services/adminServices.js/UsersAdminServices.js/fetchRevertToUser";
-
-import { useUser } from "../../../contexts/adminFindContext/findUserContext";
-import MainHeader from "../../../layout/MainHeader.js";
-import UserHeader from "../../../components/headerAmin/UserHeader.js";
+import UserHeader from "../../../components/headerAdmin/UserHeader.js";
+import { NameContext } from "../../../contexts/adminFindContext/findUserContext.js";
 
 const DashboardPage = () => {
   const [users, setUsers] = useState([]);
@@ -52,8 +51,7 @@ const DashboardPage = () => {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [anchorEl, setAnchorEl] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const { searchResults, updateSearchResults } = useUser();
+  const { name, setName } = useContext(NameContext);
   const openMenu = Boolean(anchorEl);
   const navigate = useNavigate();
 
@@ -72,6 +70,11 @@ const DashboardPage = () => {
 
   const handlePageChange = (event, value) => {
     setPage(value);
+  };
+  const handleRefresh = () => {
+    setName(null);
+    setPage(1);
+    loadUsers(1);
   };
 
   const openEditDialogHandler = (user) => {
@@ -98,10 +101,6 @@ const DashboardPage = () => {
     setUserToDelete(null);
   };
 
-  const displayedUsers =
-    Array.isArray(searchResults) && searchResults.length > 0
-      ? searchResults
-      : users;
   const handleSaveChanges = async () => {
     if (userToEdit) {
       const updatedProfile = {};
@@ -129,7 +128,9 @@ const DashboardPage = () => {
             user._id === userToEdit._id ? { ...user, ...updatedProfile } : user
           )
         );
-
+        if (name && name._id === userToEdit._id) {
+          setName({ ...name, ...updatedProfile });
+        }
         setSnackbarMessage("User updated successfully!");
         setSnackbarSeverity("success");
         setOpenSnackbar(true);
@@ -143,8 +144,10 @@ const DashboardPage = () => {
   };
 
   useEffect(() => {
-    loadUsers(page);
-  }, [page]);
+    if (!name) {
+      loadUsers(page);
+    }
+  }, [page, name]);
 
   const handleAssignRole = async (userId, newRole, artistDetails = null) => {
     try {
@@ -244,6 +247,25 @@ const DashboardPage = () => {
     <div>
       <UserHeader />
       <div className="dashboard-container">
+        {name && (
+          <div style={{ marginBottom: "20px" }}>
+            <Alert
+              severity="info"
+              action={
+                <IconButton
+                  aria-label="refresh"
+                  size="small"
+                  onClick={handleRefresh}
+                  color="inherit"
+                >
+                  <RefreshIcon fontSize="inherit" />
+                </IconButton>
+              }
+            >
+              Kết quả tìm kiếm cho: <strong>{name.username}</strong>
+            </Alert>
+          </div>
+        )}
         <TableContainer component={Paper}>
           <Table sx={{ borderCollapse: "collapse" }}>
             <TableHead>
@@ -308,54 +330,54 @@ const DashboardPage = () => {
                 </TableCell>
                 <TableCell
                   sx={{
+                    fontWeight: "bold",
                     border: "1px solid #ddd",
                     textAlign: "center",
-                    cursor: "pointer",
                   }}
                 >
                   Users
                 </TableCell>
                 <TableCell
                   sx={{
+                    fontWeight: "bold",
                     border: "1px solid #ddd",
                     textAlign: "center",
-                    cursor: "pointer",
                   }}
                 >
                   Email
                 </TableCell>
                 <TableCell
                   sx={{
+                    fontWeight: "bold",
                     border: "1px solid #ddd",
                     textAlign: "center",
-                    cursor: "pointer",
                   }}
                 >
                   Invoices
                 </TableCell>
                 <TableCell
                   sx={{
+                    fontWeight: "bold",
                     border: "1px solid #ddd",
                     textAlign: "center",
-                    cursor: "pointer",
                   }}
                 >
                   Date
                 </TableCell>
                 <TableCell
                   sx={{
+                    fontWeight: "bold",
                     border: "1px solid #ddd",
                     textAlign: "center",
-                    cursor: "pointer",
                   }}
                 >
                   Role
                 </TableCell>
                 <TableCell
                   sx={{
+                    fontWeight: "bold",
                     border: "1px solid #ddd",
                     textAlign: "center",
-                    cursor: "pointer",
                   }}
                 >
                   Actions
@@ -369,8 +391,57 @@ const DashboardPage = () => {
                     <CircularProgress />
                   </TableCell>
                 </TableRow>
+              ) : name ? (
+                <TableRow>
+                  <TableCell
+                    sx={{ border: "1px solid #ddd", textAlign: "center" }}
+                  >
+                    1
+                  </TableCell>
+                  <TableCell
+                    sx={{ border: "1px solid #ddd", textAlign: "center" }}
+                  >
+                    {name.username}
+                  </TableCell>
+                  <TableCell
+                    sx={{ border: "1px solid #ddd", textAlign: "center" }}
+                  >
+                    {name.email}
+                  </TableCell>
+                  <TableCell
+                    sx={{ border: "1px solid #ddd", textAlign: "center" }}
+                  >
+                    {name.subscriptionType}
+                  </TableCell>
+                  <TableCell
+                    sx={{ border: "1px solid #ddd", textAlign: "center" }}
+                  >
+                    {new Date(name.createdAt).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell
+                    sx={{ border: "1px solid #ddd", textAlign: "center" }}
+                  >
+                    {name.role}
+                  </TableCell>
+                  <TableCell
+                    sx={{ border: "1px solid #ddd", textAlign: "center" }}
+                  >
+                    <IconButton
+                      color="primary"
+                      onClick={() => openEditDialogHandler(name)}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton
+                      color="secondary"
+                      onClick={() => openDeleteDialogHandler(name._id)}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
               ) : (
-                displayedUsers.map((user, index) => (
+                users.map((user, index) => (
                   <TableRow key={user._id}>
                     <TableCell
                       sx={{ border: "1px solid #ddd", textAlign: "center" }}

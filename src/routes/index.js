@@ -71,13 +71,20 @@ function Router() {
           <Route index element={<HomePage />} />
           <Route path="/songs" element={<AllSongsPage />} />
           <Route path="/me/playlist/:id" element={<PlaylistPage />} />
-          <Route path="users/me/profile" element={<ProfilePage />} />
           <Route path="/artists/:id" element={<ArtistPage />} />
           <Route
             path="/album/:id"
             element={
               <ProtectedRoute>
                 <AlbumPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="users/me/profile"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
               </ProtectedRoute>
             }
           />

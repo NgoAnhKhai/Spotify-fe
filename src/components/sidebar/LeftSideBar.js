@@ -1,3 +1,4 @@
+import "../../App.css";
 import React, { useState, useEffect } from "react";
 import {
   Drawer,
@@ -12,7 +13,7 @@ import {
   IconButton,
   TextField,
 } from "@mui/material";
-
+import { ArrowLeft as ArrowLeftIcon } from "@mui/icons-material";
 import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
@@ -27,6 +28,7 @@ function LeftSideBar() {
   const [drawerWidth, setDrawerWidth] = useState(240);
   const [isResizing, setIsResizing] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(true);
   const [playlists, setPlaylists] = useState([]);
   const [open, setOpen] = useState(false);
   const [openCreateDialog, setOpenCreateDialog] = useState(false);
@@ -35,7 +37,7 @@ function LeftSideBar() {
   const [playlistToDelete, setPlaylistToDelete] = useState(null);
   const navigate = useNavigate();
   const { user } = useAuth();
-
+  const isMobile = window.innerWidth <= 600;
   useEffect(() => {
     const fetchData = async () => {
       if (user) {
@@ -74,8 +76,8 @@ function LeftSideBar() {
 
   useEffect(() => {
     if (isResizing) {
-      window.addEventListener("mousemove", handleResize);
       window.addEventListener("mouseup", stopResize);
+      window.addEventListener("mousemove", handleResize);
     }
     return () => {
       window.removeEventListener("mousemove", handleResize);
@@ -84,11 +86,8 @@ function LeftSideBar() {
   }, [isResizing]);
 
   const toggleDrawerSize = () => {
-    if (isExpanded) {
-      setDrawerWidth(240);
-    } else {
-      setDrawerWidth(500);
-    }
+    setIsDrawerOpen(!isDrawerOpen);
+    setDrawerWidth(isDrawerOpen ? 0 : 240);
     setIsExpanded(!isExpanded);
   };
 
@@ -182,6 +181,8 @@ function LeftSideBar() {
     border: "1px solid #fff",
     borderRadius: "25px",
     padding: "8px 16px",
+    position: "fixed",
+    transform: "translateY(-50%)",
     textTransform: "none",
     transition: "all 0.3s ease",
     "&:hover": {
@@ -191,23 +192,32 @@ function LeftSideBar() {
   }));
 
   return (
-    <div className="LeftSideBar">
+    <Box
+      sx={{
+        position: "relative",
+        height: "100vh",
+        overflow: "hidden",
+      }}
+      className="left-side-bar"
+    >
       <Drawer
         sx={{
           width: drawerWidth,
           flexShrink: 0,
+          position: isMobile ? "fixed" : "null",
           "& .MuiDrawer-paper": {
             width: drawerWidth,
-            position: "sticky",
-            boxSizing: "border-box",
             backgroundColor: "#121212",
+            transition: "all 0.3s ease",
             border: "none",
             color: "white",
             borderRadius: "10px",
+            position: "relative",
           },
         }}
         variant="permanent"
         anchor="left"
+        className="drawer"
       >
         <Box
           sx={{
@@ -218,6 +228,7 @@ function LeftSideBar() {
             justifyContent: "center",
             gap: 1,
           }}
+          className="sidebar-header"
         >
           <IconButton
             onClick={handleOpenCreateDialog}
@@ -228,6 +239,7 @@ function LeftSideBar() {
               height: "35px",
               "&:hover": { transform: "scale(1.1)" },
             }}
+            className="create-button"
           >
             <AddIcon sx={{ color: "#000", fontWeight: "bold" }} />
           </IconButton>
@@ -241,11 +253,12 @@ function LeftSideBar() {
               color: "white",
               textTransform: "none",
             }}
+            className="library-button"
           >
             Thư Viện
           </Button>
         </Box>
-        <Divider sx={{ backgroundColor: "grey" }} />
+        <Divider sx={{ backgroundColor: "grey" }} className="divider" />
 
         {/* Content */}
         {playlists.length === 0 ? (
@@ -253,12 +266,16 @@ function LeftSideBar() {
             sx={{
               padding: "16px",
               textAlign: "center",
+              height: "250px",
             }}
+            className="empty-playlist-message"
           >
-            <Typography variant="h6" color="white">
+            <Typography variant="h6" color="white" className="welcome-message">
               Chào mừng
             </Typography>
-            <Typography color="grey">Tạo danh sách đầu tiên của bạn</Typography>
+            <Typography color="grey" className="create-first-playlist-message">
+              Tạo danh sách đầu tiên của bạn
+            </Typography>
           </Box>
         ) : (
           playlists.map((playlist) => (
@@ -274,8 +291,14 @@ function LeftSideBar() {
                 cursor: "pointer",
               }}
               onClick={() => handlePlaylistClick(playlist._id)}
+              className="playlist-item"
             >
-              <Typography variant="h6" fontWeight="bold" color="white">
+              <Typography
+                variant="h6"
+                fontWeight="bold"
+                color="white"
+                className="playlist-title"
+              >
                 {playlist.title}
               </Typography>
               <IconButton
@@ -287,6 +310,7 @@ function LeftSideBar() {
                   marginLeft: "auto",
                   color: "#fff",
                 }}
+                className="delete-button"
               >
                 <DeleteIcon />
               </IconButton>
@@ -295,24 +319,35 @@ function LeftSideBar() {
         )}
 
         {/* Dialog Yêu cầu đăng nhập */}
-        <Dialog open={open} onClose={handleClose}>
-          <DialogTitle sx={{ fontWeight: "bold" }}>
+        <Dialog open={open} onClose={handleClose} className="login-dialog">
+          <DialogTitle sx={{ fontWeight: "bold" }} className="dialog-title">
             Tạo danh sách phát
           </DialogTitle>
           <DialogContent>
-            <Typography>Đăng nhập để tạo playlist</Typography>
+            <Typography className="dialog-message">
+              Đăng nhập để tạo playlist
+            </Typography>
           </DialogContent>
           <DialogActions>
-            <StyleButtonHold onClick={handleClose}>Để sau</StyleButtonHold>
-            <StyledButton onClick={() => navigate("/login")}>
+            <StyleButtonHold onClick={handleClose} className="dialog-button">
+              Để sau
+            </StyleButtonHold>
+            <StyledButton
+              onClick={() => navigate("/login")}
+              className="dialog-button"
+            >
               Đăng nhập
             </StyledButton>
           </DialogActions>
         </Dialog>
 
         {/* Dialog tạo playlist */}
-        <Dialog open={openCreateDialog} onClose={handleCloseCreateDialog}>
-          <DialogTitle sx={{ fontWeight: "bold" }}>
+        <Dialog
+          open={openCreateDialog}
+          onClose={handleCloseCreateDialog}
+          className="create-playlist-dialog"
+        >
+          <DialogTitle sx={{ fontWeight: "bold" }} className="dialog-title">
             Tạo playlist mới
           </DialogTitle>
           <DialogContent>
@@ -323,25 +358,52 @@ function LeftSideBar() {
               onChange={(e) => setPlaylistTitle(e.target.value)}
               variant="outlined"
               sx={{ marginBottom: 2 }}
+              className="playlist-name-input"
             />
           </DialogContent>
           <DialogActions>
-            <StyledButton onClick={handleCreatePlaylist}>Tạo</StyledButton>
-            <StyledButton onClick={handleCloseCreateDialog}>Đóng</StyledButton>
+            <StyledButton
+              onClick={handleCreatePlaylist}
+              className="dialog-button"
+            >
+              Tạo
+            </StyledButton>
+            <StyledButton
+              onClick={handleCloseCreateDialog}
+              className="dialog-button"
+            >
+              Đóng
+            </StyledButton>
           </DialogActions>
         </Dialog>
 
         {/* Dialog xóa playlist */}
-        <Dialog open={openDeleteDialog} onClose={handleCloseDeleteDialog}>
-          <DialogTitle sx={{ fontWeight: "bold" }}>Xóa Playlist</DialogTitle>
+        <Dialog
+          open={openDeleteDialog}
+          onClose={handleCloseDeleteDialog}
+          className="delete-playlist-dialog"
+        >
+          <DialogTitle sx={{ fontWeight: "bold" }} className="dialog-title">
+            Xóa Playlist
+          </DialogTitle>
           <DialogContent>
-            <Typography>
+            <Typography className="dialog-message">
               Bạn có chắc chắn muốn xóa playlist này không?
             </Typography>
           </DialogContent>
           <DialogActions>
-            <StyledButton onClick={handleDeletePlaylist}>Xóa</StyledButton>
-            <StyledButton onClick={handleCloseDeleteDialog}>Hủy</StyledButton>
+            <StyledButton
+              onClick={handleDeletePlaylist}
+              className="dialog-button"
+            >
+              Xóa
+            </StyledButton>
+            <StyledButton
+              onClick={handleCloseDeleteDialog}
+              className="dialog-button"
+            >
+              Hủy
+            </StyledButton>
           </DialogActions>
         </Dialog>
         <Box
@@ -354,9 +416,42 @@ function LeftSideBar() {
             cursor: "ew-resize",
           }}
           onMouseDown={startResize}
+          className="resize-handle"
         />
       </Drawer>
-    </div>
+      <Button
+        onClick={toggleDrawerSize}
+        sx={{
+          borderRadius: "50%",
+          minWidth: "48px",
+          minHeight: "48px",
+          width: "48px",
+          height: "48px",
+          position: "fixed",
+          top: "50%",
+          left: "16px",
+          transform: "translateY(-50%)",
+          zIndex: 9999,
+          color: "white",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          transition: "all 0.3s ease",
+          "&:hover": {
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
+            transform: "translateY(-50%) scale(1.1)",
+          },
+        }}
+      >
+        <ArrowLeftIcon
+          sx={{
+            fontSize: "24px",
+            transform: isDrawerOpen ? "rotate(180deg)" : "rotate(0deg)",
+            transition: "transform 0.3s ease",
+          }}
+        />
+      </Button>
+    </Box>
   );
 }
 

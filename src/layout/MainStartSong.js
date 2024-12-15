@@ -6,6 +6,7 @@ import SkipNextIcon from "@mui/icons-material/SkipNext";
 import SkipPreviousIcon from "@mui/icons-material/SkipPrevious";
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 import { MusicPlayerContext } from "../contexts/MusicPlayerContext";
+import { useNavigate } from "react-router-dom";
 
 const MainStartSong = () => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -13,8 +14,10 @@ const MainStartSong = () => {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [showThumb, setShowThumb] = useState(false);
+  const [isVolumeSliderVisible, setIsVolumeSliderVisible] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const audioRef = useRef(null);
-
+  const navigate = useNavigate();
   const { currentSong, setCurrentSong, playlist } =
     useContext(MusicPlayerContext);
 
@@ -26,11 +29,15 @@ const MainStartSong = () => {
         setIsPlaying(false);
       }
     };
-
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    handleResize();
     window.addEventListener("storage", handleLogout);
-
+    window.addEventListener("resize", handleResize);
     return () => {
       window.removeEventListener("storage", handleLogout);
+      window.addEventListener("resize", handleResize);
     };
   }, []);
 
@@ -109,6 +116,9 @@ const MainStartSong = () => {
     const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
   };
+  const navigateToArtist = (artistId) => {
+    navigate(`/artists/${artistId}`);
+  };
 
   return (
     <div className="MainStartSong">
@@ -120,7 +130,7 @@ const MainStartSong = () => {
           alignItems: "center",
           width: "100%",
           backgroundColor: "#121212",
-          padding: "16px",
+          padding: { xs: "15px", sm: "16px" },
           borderTop: "1px solid #282828",
         }}
       >
@@ -149,7 +159,12 @@ const MainStartSong = () => {
                 <Typography variant="h6" sx={{ fontWeight: "bold" }}>
                   {currentSong.title}
                 </Typography>
-                <Typography color="#4f5370" variant="h7">
+                <Typography
+                  onClick={() => navigateToArtist(currentSong.artistID._id)}
+                  color="#4f5370"
+                  variant="h7"
+                  sx={{ cursor: "pointer" }}
+                >
                   {currentSong.artistID.name}
                 </Typography>
 
@@ -203,23 +218,55 @@ const MainStartSong = () => {
               alignItems: "center",
               justifyContent: "flex-end",
               width: "30%",
+              position: "relative", // Đảm bảo định vị chính xác
             }}
           >
-            <VolumeUpIcon sx={{ color: "white", marginRight: "10px" }} />
-            <Slider
-              value={volume}
-              onChange={handleVolumeChange}
-              sx={{ color: "#1e90ff", width: "100px" }}
-              onMouseEnter={() => setShowThumb(true)}
-              onMouseLeave={() => setShowThumb(false)}
-              componentsProps={{
-                thumb: {
-                  style: {
-                    display: showThumb ? "block" : "none",
-                  },
-                },
+            {/* Nút Âm Lượng */}
+            <IconButton
+              onClick={() => setIsVolumeSliderVisible((prev) => !prev)}
+              sx={{ color: "white" }}
+            >
+              <VolumeUpIcon />
+            </IconButton>
+
+            {/* Thanh Trượt Âm Lượng */}
+            <Box
+              sx={{
+                position: isMobile ? "absolute" : "static",
+                display: isMobile
+                  ? isVolumeSliderVisible
+                    ? "block"
+                    : "none"
+                  : "flex",
+                alignItems: "center",
+                justifyContent: isMobile ? "center" : "flex-end",
+                height: isMobile ? "150px" : "4px",
+                width: isMobile ? "4px" : "120px",
+                right: isMobile ? "50px" : "auto",
+                bottom: isMobile ? "20px" : "auto",
               }}
-            />
+            >
+              <Slider
+                value={volume}
+                onChange={handleVolumeChange}
+                orientation={isMobile ? "vertical" : "horizontal"}
+                sx={{
+                  color: "#1e90ff",
+                  width: isMobile ? "100%" : "100%",
+                  height: isMobile ? "100%" : "4px",
+                  "& .MuiSlider-thumb": {
+                    width: isMobile ? "8px" : "12px",
+                    height: isMobile ? "8px" : "12px",
+                  },
+                  "& .MuiSlider-track": {
+                    width: isMobile ? "2px" : "4px",
+                  },
+                  "& .MuiSlider-rail": {
+                    width: isMobile ? "4px" : "4px",
+                  },
+                }}
+              />
+            </Box>
           </Box>
         </Box>
 

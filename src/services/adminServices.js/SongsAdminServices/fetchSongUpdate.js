@@ -1,6 +1,6 @@
 import apiService from "../../../api/apiService";
 
-export const fetchUpdateSong = async (songId, updatedSongData) => {
+export const fetchSongUpdate = async (songId, updatedSongData) => {
   try {
     const response = await apiService.put(
       `/admin/songs/${songId}`,

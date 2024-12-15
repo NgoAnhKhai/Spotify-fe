@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import { Snackbar, Alert } from "@mui/material";
+import React, { useContext, useState } from "react";
 import {
   styled,
   alpha,
@@ -13,16 +12,19 @@ import {
   Box,
   Avatar,
   Button,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import HomeIcon from "@mui/icons-material/Home";
+import { AdminPanelSettings as AdminIcon } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 
-import { AdminPanelSettings as AdminIcon } from "@mui/icons-material";
-import { useSearch } from "../../contexts/SearchContext";
-import { fetchFindUserByName } from "../../services/adminServices.js/UsersAdminServices.js/fetchFindUserByName";
 import { useAuth } from "../../contexts/AuthContext";
+import { GenreContext } from "../../contexts/adminFindContext/findGenreContext";
+import { fetchGenreByName } from "../../services/adminServices.js/GenresAdminServices.js/fetchFindGenreByName";
 
+// Styled components
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
   borderRadius: "20px",
@@ -53,16 +55,15 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-export default function UserHeader() {
+export default function GenreHeader() {
   const navigate = useNavigate();
-
   const { user, signout } = useAuth();
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [anchorEl, setAnchorEl] = useState(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-  const { updateSearchResults } = useSearch();
+  const [searchQuery, setSearchQuery] = useState("");
+  const { setGenreName } = useContext(GenreContext);
   const open = Boolean(anchorEl);
 
   const handleMenuClick = (event) => {
@@ -87,21 +88,24 @@ export default function UserHeader() {
   const handleSearchKeyPress = async (event) => {
     const query = String(searchQuery).trim();
 
-    if (event.key === "Enter" && query !== "") {
+    if (event.key === "Enter" && query.trim() !== "") {
       try {
-        const results = await fetchFindUserByName({ name: query });
+        const results = await fetchGenreByName(query);
 
-        if (results.user && results.user !== "") {
-          updateSearchResults(results.user);
-          navigate("/admin/dashboard/users");
+        console.log("result:", results.genres);
+        if (results) {
+          setGenreName(results.genres);
+          setSnackbarMessage("genre found successfully!");
+          setSnackbarSeverity("success");
+          setSnackbarOpen(true);
         } else {
-          setSnackbarMessage("Không có bài hát nào tìm thấy!");
+          setSnackbarMessage("No genre found.");
           setSnackbarSeverity("error");
           setSnackbarOpen(true);
         }
       } catch (error) {
-        console.error("Error searching songs:", error);
-        setSnackbarMessage("Không có bài hát nào tìm thấy!");
+        console.error("Error searching genre:", error);
+        setSnackbarMessage("Error while searching for genre.");
         setSnackbarSeverity("error");
         setSnackbarOpen(true);
       }
@@ -155,7 +159,6 @@ export default function UserHeader() {
               <AdminIcon />
             </IconButton>
 
-            {/* Home, Search and Note Icon */}
             <Box
               sx={{
                 flexGrow: 1,
@@ -187,26 +190,21 @@ export default function UserHeader() {
                 }}
                 onClick={() => navigate("/")}
               />
-              <Box sx={{ display: "flex", alignItems: "center" }}>
-                <Search sx={{ padding: "0px 10px" }}>
-                  <SearchIconWrapper>
-                    <SearchIcon
-                      sx={{ fontSize: "35px", paddingRight: "10px" }}
-                    />
-                  </SearchIconWrapper>
-                  <StyledInputBase
-                    value={searchQuery}
-                    onChange={handleSearchChange}
-                    onKeyDown={handleSearchKeyPress}
-                    placeholder="What Do You Want To Play ?"
-                    inputProps={{ "aria-label": "search" }}
-                    sx={{ paddingTop: "8px" }}
-                  />
-                </Search>
-              </Box>
+              <Search sx={{ padding: "0px 10px" }}>
+                <SearchIconWrapper>
+                  <SearchIcon sx={{ fontSize: "35px", paddingRight: "10px" }} />
+                </SearchIconWrapper>
+                <StyledInputBase
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  onKeyDown={handleSearchKeyPress}
+                  placeholder="What Do You Want ?"
+                  inputProps={{ "aria-label": "search" }}
+                  sx={{ paddingTop: "8px" }}
+                />
+              </Search>
             </Box>
 
-            {/* Register, Login, and Avatar */}
             {!user ? (
               <>
                 <Button
@@ -276,9 +274,8 @@ export default function UserHeader() {
             onClose={() => setSnackbarOpen(false)}
           >
             <Alert
-              onClose={() => setSnackbarOpen(false)}
               severity={snackbarSeverity}
-              sx={{ width: "100%" }}
+              onClose={() => setSnackbarOpen(false)}
             >
               {snackbarMessage}
             </Alert>

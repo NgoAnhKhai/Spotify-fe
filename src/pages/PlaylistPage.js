@@ -6,7 +6,7 @@ import PlaylistDetail from "../contentPage/PlaylistDetail/PlaylistDetail";
 const AlbumPage = () => {
   return (
     <>
-      <div className="album-container">
+      <div className="homepage-container">
         <LeftSideBar />
         <PlaylistDetail />
         <RightSideBar />

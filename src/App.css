@@ -1,49 +1,107 @@
 .homepage-container {
   display: flex;
   justify-content: space-between;
+  width: "100%";
   align-items: flex-start;
   background-color: #000;
-  height: 100vh;
-  overflow: hidden;
-}
-
-.album-container {
-  background-color: #000;
+  height: 80vh;
+  overflow-y: auto;
 }
 .containerProfile {
   background: linear-gradient(to bottom, #1e90ff 15%, #fff);
 }
 
-.album-container {
+/*IHPONE 12*/
+/*HomePage*/
+.top-songs-container,
+.feature-section {
+  padding: 16px;
+}
+
+.songs-list,
+.album-cover-image {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.song-cover-image {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+.pagination-controls {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  background: back;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  margin-top: 16px;
+}
+.pagination-button {
+  min-width: 100px;
+  border-radius: 8px;
+  text-align: center;
 }
 
-/* styles.css */
-.custom-scroll {
-  scrollbar-width: thin;
-  scrollbar-color: #6200ea #e0e0e0;
+@media (max-width: 600px) {
+  .top-songs-title {
+    display: none;
+  }
+  .song-item {
+    display: none;
+  }
+  .pagination-controls {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .pagination-button {
+    width: 100%;
+  }
+
+  .album-item {
+    flex: 0 1 calc(50% - 8px);
+    max-width: calc(50% - 8px);
+  }
+
+  .album-item:hover {
+    transform: scale(1.05);
+  }
+
+  .album-cover-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .album-title {
+    font-size: 10px;
+    text-align: center;
+    margin-top: 8px;
+    color: #333;
+    font-weight: bold;
+  }
+  .album-artist {
+    font-size: 12px;
+    text-align: center;
+    color: #666;
+    margin-top: 4px;
+  }
 }
 
-.custom-scroll::-webkit-scrollbar {
-  width: 8px;
+/* 
+Header */
+/* App.css */
+
+@media (max-width: 600px) {
+  /* Xóa admin icon */
+  .admin-icon-button {
+    display: none !important;
+  }
 }
 
-.custom-scroll::-webkit-scrollbar-thumb {
-  background-color: #6200ea;
-  border-radius: 10px;
-}
-
-.custom-scroll::-webkit-scrollbar-track {
-  background-color: #e0e0e0;
-}
-
-@media (max-width: 375.2px) {
-  /* XoaLeftSideBar và RightSideBar, thu nhỏ thanh tim kiem va thu nho main startSong, phóng to HomepAge  */
-}
-
-@media (max-width: 905px) {
-  /* Keo rightsidebar len mot ti. day mainstartsong len, homepage thi thu nha cac bai hat */
-}
+/*IPAD AIR*/

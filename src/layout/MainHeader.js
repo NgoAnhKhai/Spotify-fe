@@ -1,3 +1,4 @@
+import "../App.css";
 import React, { useContext, useState } from "react";
 import { Snackbar, Alert } from "@mui/material";
 import {
@@ -15,6 +16,7 @@ import {
   Button,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import HomeIcon from "@mui/icons-material/Home";
 import { useNavigate } from "react-router-dom";
 import { ThemeContext } from "../contexts/darkMode/ThemeProvider";
@@ -33,6 +35,10 @@ const Search = styled("div")(({ theme }) => ({
   height: "48px",
   "&:focus-within": {
     border: "2px solid #fff",
+  },
+  [theme.breakpoints.down("md")]: {
+    width: "60px",
+    marginRight: "0",
   },
 }));
 
@@ -55,16 +61,31 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
+const StyledAvatar = styled(Avatar)(({ theme, isMobile }) => ({
+  width: isMobile ? "30px" : "40px",
+  height: isMobile ? "30px" : "40px",
+  borderRadius: "50%",
+  backgroundColor: "#888",
+  fontSize: isMobile ? "20px" : "inherit",
+  color: "#fff",
+  display: isMobile ? "flex" : "block",
+  justifyContent: isMobile ? "center" : "initial",
+  alignItems: isMobile ? "center" : "initial",
+  textTransform: isMobile ? "uppercase" : "none",
+  transition: "all 0.3s ease",
+}));
+
 export default function MainHeader() {
   const navigate = useNavigate();
   const { darkMode, toggleDarkMode } = useContext(ThemeContext);
   const { user, signout } = useAuth();
   const [anchorEl, setAnchorEl] = React.useState(null);
+  const [authAnchorEl, setAuthAnchorEl] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-
+  const isMobile = window.innerWidth <= 600;
   const open = Boolean(anchorEl);
 
   const { updateSearchResults } = useSearch();
@@ -81,6 +102,13 @@ export default function MainHeader() {
     signout();
     setAnchorEl(null);
     navigate("/");
+  };
+  const handleAuthMenuClick = (event) => {
+    setAuthAnchorEl(event.currentTarget);
+  };
+
+  const handleAuthMenuClose = () => {
+    setAuthAnchorEl(null);
   };
 
   const handleSearchChange = (event) => {
@@ -132,7 +160,10 @@ export default function MainHeader() {
   return (
     <>
       <CssBaseline />
-      <Box sx={{ flexGrow: 1, margin: 0, padding: 0 }}>
+      <Box
+        sx={{ flexGrow: 1, margin: 0, padding: 0, overflowX: "auto" }}
+        className="app-container"
+      >
         <AppBar
           position="static"
           sx={{
@@ -141,6 +172,7 @@ export default function MainHeader() {
             padding: "12px",
             boxShadow: "none",
           }}
+          className="app-bar"
         >
           <Toolbar
             sx={{
@@ -150,6 +182,7 @@ export default function MainHeader() {
               justifyContent: "space-between",
               alignItems: "center",
             }}
+            className="toolbar"
           >
             {/* Icon Toggle Dark Mode */}
             <IconButton
@@ -159,9 +192,11 @@ export default function MainHeader() {
                 marginLeft: "16px",
                 color: "#ffffff",
               }}
+              className="dark-mode-toggle"
             >
               {darkMode ? <Brightness7 /> : <Brightness4 />}
             </IconButton>
+
             <IconButton
               color="inherit"
               onClick={handleAdminClick}
@@ -173,6 +208,7 @@ export default function MainHeader() {
                   transform: "scale(1.1)",
                 },
               }}
+              className="admin-icon-button"
             >
               <AdminIcon />
             </IconButton>
@@ -182,10 +218,11 @@ export default function MainHeader() {
               sx={{
                 flexGrow: 1,
                 display: "flex",
-                justifyContent: "center",
-                ml: 2,
+                justifyContent: isMobile ? "flex-start" : "center",
+                ml: isMobile ? 0 : 2,
                 alignItems: "center",
               }}
+              className="nav-buttons-container"
             >
               <Button
                 color="inherit"
@@ -208,27 +245,43 @@ export default function MainHeader() {
                   },
                 }}
                 onClick={() => navigate("/")}
+                className="home-button"
               />
-              <Box sx={{ display: "flex", alignItems: "center" }}>
-                <Search sx={{ padding: "0px 10px" }}>
+              <Box
+                sx={{
+                  flexGrow: isMobile ? 1 : "unset",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+                className="search-container"
+              >
+                <Search
+                  sx={{
+                    padding: isMobile ? "0px 4px" : "0px 3px",
+                    width: isMobile ? "100%" : "474px",
+                  }}
+                  className="search-icon"
+                >
                   <SearchIconWrapper>
                     <SearchIcon
-                      sx={{ fontSize: "35px", paddingRight: "10px" }}
+                      sx={{ fontSize: "30px", paddingRight: "2px" }}
+                      className="search-icon-inner"
                     />
                   </SearchIconWrapper>
                   <StyledInputBase
                     value={searchQuery}
                     onChange={handleSearchChange}
                     onKeyDown={handleSearchKeyPress}
-                    placeholder="What Do You Want To Play ?"
+                    placeholder="Search..."
                     inputProps={{ "aria-label": "search" }}
-                    sx={{ paddingTop: "8px" }}
+                    sx={{ ml: "10px", paddingTop: "8px", width: "200px" }}
+                    className="search-input"
                   />
                 </Search>
                 <IconButton
                   onClick={handleMusicIconClick}
                   sx={{
-                    ml: 2,
+                    ml: isMobile ? 16 : 2,
                     color: "#fff",
                     backgroundColor: "#1f1f1f",
                     borderRadius: "50%",
@@ -237,6 +290,7 @@ export default function MainHeader() {
                       transform: "scale(1.1)",
                     },
                   }}
+                  className="music-icon-button"
                 >
                   <MusicNoteIcon sx={{ fontSize: "30px" }} />
                 </IconButton>
@@ -246,76 +300,160 @@ export default function MainHeader() {
             {/* Register, Login, and Avatar */}
             {!user ? (
               <>
-                <Button
-                  color="inherit"
-                  onClick={() => navigate("/register")}
-                  sx={{
-                    fontWeight: "bold",
-                    color: "#888",
-                    backgroundColor: "transparent",
-                    borderRadius: "25px",
-                    padding: "8px 16px",
-                    textTransform: "none",
-                    transition: "all 0.3s ease",
-                    "&:hover": {
-                      color: "#f0f0f0",
-                      transform: "scale(1.1)",
-                    },
-                  }}
-                >
-                  Đăng Ký
-                </Button>
-                <Button
-                  color="inherit"
-                  onClick={() => navigate("/login")}
-                  sx={{
-                    fontWeight: "bold",
-                    color: "#000",
-                    backgroundColor: "#fff",
-                    border: "1px solid #fff",
-                    borderRadius: "25px",
-                    padding: "8px 16px",
-                    textTransform: "none",
-                    transition: "all 0.3s ease",
-                    "&:hover": {
-                      backgroundColor: "#fff",
-                      color: "#000",
-                      transform: "scale(1.1)",
-                    },
-                  }}
-                >
-                  Đăng Nhập
-                </Button>
+                {isMobile ? (
+                  <IconButton
+                    sx={{
+                      color: "#fff",
+                      mr: 10,
+                      ml: 0,
+                      padding: 0,
+                    }}
+                    onClick={handleAuthMenuClick}
+                    aria-controls={authAnchorEl ? "auth-menu" : undefined}
+                    aria-haspopup="true"
+                  >
+                    <MoreVertIcon fontSize="large" />
+                  </IconButton>
+                ) : (
+                  <Box>
+                    <Button
+                      sx={{
+                        fontWeight: "bold",
+                        color: "#888",
+                        backgroundColor: "transparent",
+                        borderRadius: "25px",
+                        padding: "8px 16px",
+                        textTransform: "none",
+                        transition: "all 0.3s ease",
+                        "&:hover": {
+                          color: "#f0f0f0",
+                          transform: "scale(1.1)",
+                        },
+                      }}
+                      onClick={() => navigate("/register")}
+                    >
+                      Đăng Ký
+                    </Button>
+                    <Button
+                      sx={{
+                        fontWeight: "bold",
+                        color: "#000",
+                        backgroundColor: "#fff",
+                        border: "1px solid #fff",
+                        borderRadius: "25px",
+                        padding: "8px 16px",
+                        textTransform: "none",
+                        transition: "all 0.3s ease",
+                        "&:hover": {
+                          backgroundColor: "#fff",
+                          color: "#000",
+                          transform: "scale(1.1)",
+                        },
+                      }}
+                      onClick={() => navigate("/login")}
+                    >
+                      Đăng Nhập
+                    </Button>
+                  </Box>
+                )}
               </>
             ) : (
               <>
                 <IconButton
                   onClick={handleMenuClick}
-                  sx={{ padding: 0, ml: 2 }}
+                  sx={{ padding: 0, mr: 15 }}
+                  className="user-avatar-button"
                 >
-                  <Avatar alt={user.email} src="/avatar-placeholder.png" />
+                  <StyledAvatar isMobile={isMobile}>
+                    {isMobile ? <MoreVertIcon /> : <Avatar />}
+                  </StyledAvatar>
                 </IconButton>
                 <Menu
                   anchorEl={anchorEl}
                   open={open}
                   onClose={handleMenuClose}
                   sx={{ mt: "40px" }}
+                  className="user-menu"
                 >
-                  <MenuItem onClick={handleMenuClose}>Cài đặt</MenuItem>
-                  <MenuItem onClick={handleLogout}>Đăng xuất</MenuItem>
+                  <MenuItem onClick={handleMenuClose} className="menu-item">
+                    Cài đặt
+                  </MenuItem>
+                  <MenuItem onClick={handleLogout} className="menu-item">
+                    Đăng xuất
+                  </MenuItem>
                 </Menu>
               </>
             )}
+            <Menu
+              id="auth-menu"
+              anchorEl={authAnchorEl}
+              open={Boolean(authAnchorEl)}
+              onClose={handleAuthMenuClose}
+              MenuListProps={{
+                "aria-labelledby": "auth-button",
+              }}
+            >
+              {/* Đăng Ký */}
+              <MenuItem
+                onClick={() => {
+                  navigate("/register");
+                  handleAuthMenuClose();
+                }}
+                sx={{
+                  fontWeight: "bold",
+                  color: "#888",
+                  backgroundColor: "transparent",
+                  borderRadius: "25px",
+                  padding: "8px 16px",
+                  textTransform: "none",
+                  transition: "all 0.3s ease",
+                  "&:hover": {
+                    backgroundColor: "#f0f0f0",
+                    color: "#000",
+                    transform: "scale(1.1)",
+                  },
+                }}
+              >
+                Đăng Ký
+              </MenuItem>
+
+              {/* Đăng Nhập */}
+              <MenuItem
+                onClick={() => {
+                  navigate("/login");
+                  handleAuthMenuClose();
+                }}
+                sx={{
+                  fontWeight: "bold",
+                  color: "#000",
+                  backgroundColor: "#fff",
+                  border: "1px solid #fff",
+                  borderRadius: "25px",
+                  padding: "8px 16px",
+                  textTransform: "none",
+                  transition: "all 0.3s ease",
+                  "&:hover": {
+                    backgroundColor: "#fff",
+                    color: "#000",
+                    transform: "scale(1.1)",
+                  },
+                }}
+              >
+                Đăng Nhập
+              </MenuItem>
+            </Menu>
           </Toolbar>
           <Snackbar
             open={snackbarOpen}
             autoHideDuration={3000}
             onClose={() => setSnackbarOpen(false)}
+            className="snackbar"
           >
             <Alert
               onClose={() => setSnackbarOpen(false)}
               severity={snackbarSeverity}
               sx={{ width: "100%" }}
+              className="alert-snackbar"
             >
               {snackbarMessage}
             </Alert>

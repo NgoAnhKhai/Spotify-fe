@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
 import {
   Table,
@@ -23,12 +23,15 @@ import {
   MenuItem,
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import RefreshIcon from "@mui/icons-material/Refresh";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useNavigate } from "react-router-dom";
 import { fetchGetAllAlbums } from "../../../services/adminServices.js/AlbumsAdminServices.js/fetchGetAllAlbums";
 import { fetchUpdateAlbums } from "../../../services/adminServices.js/AlbumsAdminServices.js/fetchUpdateAlbums";
 import { fetchDeleteAlbum } from "../../../services/adminServices.js/AlbumsAdminServices.js/fetchDeleteAlbums";
+import { AlbumContext } from "../../../contexts/adminFindContext/findAlbumContext";
+import AlbumHeader from "../../../components/headerAdmin/albumHeader";
 
 const DashboardAlbumsPage = () => {
   const [albums, setAlbums] = useState([]);
@@ -47,6 +50,7 @@ const DashboardAlbumsPage = () => {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [anchorEl, setAnchorEl] = useState(null);
+  const { albumTitle, setAlbumTitle } = useContext(AlbumContext);
   const openMenu = Boolean(anchorEl);
   const navigate = useNavigate();
 
@@ -99,7 +103,11 @@ const DashboardAlbumsPage = () => {
     setOpenDeleteDialog(false);
     setAlbumToDelete(null);
   };
-
+  const handleRefresh = () => {
+    setAlbumTitle(null);
+    setPage(1);
+    loadAlbums(1);
+  };
   const handleSaveChanges = async () => {
     if (albumToEdit) {
       const updatedAlbum = {};
@@ -137,7 +145,9 @@ const DashboardAlbumsPage = () => {
               : album
           )
         );
-
+        if (albumTitle && albumTitle._id === albumToEdit._id) {
+          setAlbumTitle({ ...albumTitle, ...updatedAlbum });
+        }
         setSnackbarMessage("Album updated successfully!");
         setSnackbarSeverity("success");
       } catch (error) {
@@ -151,7 +161,9 @@ const DashboardAlbumsPage = () => {
   };
 
   useEffect(() => {
-    loadAlbums(page);
+    if (!albumTitle) {
+      loadAlbums(page);
+    }
   }, [page]);
 
   // Delete Album
@@ -209,7 +221,25 @@ const DashboardAlbumsPage = () => {
 
   return (
     <div>
+      <AlbumHeader />
       <div className="dashboard-container">
+        {albumTitle && (
+          <Alert
+            severity="info"
+            action={
+              <IconButton
+                aria-label="refresh"
+                size="small"
+                onClick={handleRefresh}
+                color="inherit"
+              >
+                <RefreshIcon fontSize="inherit" />
+              </IconButton>
+            }
+          >
+            Showing results for: <strong>{albumTitle.title}</strong>
+          </Alert>
+        )}
         <TableContainer component={Paper}>
           <Table sx={{ borderCollapse: "collapse" }}>
             <TableHead>
@@ -329,6 +359,50 @@ const DashboardAlbumsPage = () => {
                 <TableRow>
                   <TableCell colSpan={6} sx={{ textAlign: "center" }}>
                     <CircularProgress />
+                  </TableCell>
+                </TableRow>
+              ) : albumTitle ? (
+                <TableRow key={albumTitle._id}>
+                  <TableCell
+                    sx={{ border: "1px solid #ddd", textAlign: "center" }}
+                  >
+                    1
+                  </TableCell>
+                  <TableCell
+                    sx={{ border: "1px solid #ddd", textAlign: "center" }}
+                  >
+                    {albumTitle.title}
+                  </TableCell>
+                  <TableCell
+                    sx={{ border: "1px solid #ddd", textAlign: "center" }}
+                  >
+                    {new Date(albumTitle.releaseDate).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell
+                    sx={{ border: "1px solid #ddd", textAlign: "center" }}
+                  >
+                    {albumTitle.coverImageURL}
+                  </TableCell>
+                  <TableCell
+                    sx={{ border: "1px solid #ddd", textAlign: "center" }}
+                  >
+                    {albumTitle.listSong.length} songs
+                  </TableCell>
+                  <TableCell
+                    sx={{ border: "1px solid #ddd", textAlign: "center" }}
+                  >
+                    <IconButton
+                      color="primary"
+                      onClick={() => openEditDialogHandler(albumTitle)}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton
+                      color="secondary"
+                      onClick={() => openDeleteDialogHandler(albumTitle._id)}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
                   </TableCell>
                 </TableRow>
               ) : (

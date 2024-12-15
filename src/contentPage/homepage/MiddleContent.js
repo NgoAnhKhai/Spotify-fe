@@ -1,3 +1,4 @@
+import "../../App.css";
 import React, { useContext, useEffect, useState } from "react";
 import {
   Box,
@@ -29,7 +30,7 @@ const MiddleContent = ({ song }) => {
   const theme = useTheme();
   const { user } = useAuth();
   const { setCurrentSong } = useContext(MusicPlayerContext);
-
+  const isMobile = window.innerWidth <= 600;
   const loadAlbums = async (pageNumber) => {
     setLoading(true);
     try {
@@ -94,7 +95,7 @@ const MiddleContent = ({ song }) => {
         sx={{
           overflowY: "auto",
           borderRadius: "10px",
-          height: "100%",
+          height: isMobile ? "180vh" : "220vh",
           maxHeight: "calc(100vh - 100px)",
           display: "flex",
           flexDirection: "column",
@@ -110,6 +111,7 @@ const MiddleContent = ({ song }) => {
           transition: "all 0.3s ease",
           color: theme.palette.text.primary,
         }}
+        className="top-songs-container"
       >
         <Box
           sx={{
@@ -118,10 +120,19 @@ const MiddleContent = ({ song }) => {
             flexDirection: "column",
             alignItems: "center",
           }}
+          className="top-songs-content"
         >
           <Typography
             variant="h4"
-            sx={{ fontWeight: "bold", marginBottom: "24px" }}
+            sx={{
+              fontWeight: "bold",
+              marginBottom: "10px",
+              position: "absolute",
+              top: 0,
+              left: 0,
+              margin: "10px",
+            }}
+            className="top-songs-title"
           >
             Top Songs
           </Typography>
@@ -134,17 +145,18 @@ const MiddleContent = ({ song }) => {
               justifyContent: "space-between",
               width: "100%",
             }}
+            className="songs-list"
           >
             {loading ? (
-              // Show skeleton loader while data is loading
-              <SkeletonLoader />
+              <SkeletonLoader className="skeleton-loader" />
             ) : songs.length > 0 ? (
               songs.slice(0, 4).map((song, index) => (
-                <Grid item xs={4} key={song._id}>
+                <Grid key={song._id} className="song-item">
                   <Box
                     sx={{
                       display: "flex",
                       alignItems: "center",
+                      top: "25px",
                       padding: "8px",
                       borderRadius: "8px",
                       transition: "0.3s",
@@ -159,6 +171,7 @@ const MiddleContent = ({ song }) => {
                       position: "relative",
                     }}
                     onClick={() => handleSongClick(song)}
+                    className="song-box"
                   >
                     <Box
                       component="img"
@@ -171,6 +184,7 @@ const MiddleContent = ({ song }) => {
                         mr: 2,
                         objectFit: "cover",
                       }}
+                      className="song-cover-image"
                     />
                     <Typography
                       variant="body1"
@@ -179,6 +193,7 @@ const MiddleContent = ({ song }) => {
                         color: theme.palette.text.primary,
                         flex: 1,
                       }}
+                      className="song-title"
                     >
                       {song.title}
                     </Typography>
@@ -202,8 +217,9 @@ const MiddleContent = ({ song }) => {
                       onClick={() => {
                         handleSongClick(song);
                       }}
+                      className="play-button"
                     >
-                      <PlayIcon />
+                      <PlayIcon className="play-icon" />
                     </IconButton>
                   </Box>
                 </Grid>
@@ -226,6 +242,7 @@ const MiddleContent = ({ song }) => {
             marginTop: "0px",
             marginBottom: "32px",
           }}
+          className="feature-section"
         >
           <Typography
             variant="h4"
@@ -235,6 +252,7 @@ const MiddleContent = ({ song }) => {
               textAlign: "left",
               marginBottom: "24px",
             }}
+            className="feature-title"
           >
             Feature
           </Typography>
@@ -247,9 +265,10 @@ const MiddleContent = ({ song }) => {
               width: "100%",
               gap: "16px",
             }}
+            className="feature-items-container"
           >
             {loading ? (
-              <SkeletonLoader />
+              <SkeletonLoader className="skeleton-loader" />
             ) : albums.length > 0 ? (
               albums.map((album, index) => (
                 <Box
@@ -278,6 +297,7 @@ const MiddleContent = ({ song }) => {
                     },
                   }}
                   onClick={() => handleClick(album._id)}
+                  className="album-item"
                 >
                   <img
                     src={album.coverImageURL}
@@ -288,6 +308,7 @@ const MiddleContent = ({ song }) => {
                       borderRadius: "8px",
                       marginBottom: "8px",
                     }}
+                    className="album-cover-image"
                   />
                   <Typography
                     variant="body1"
@@ -295,6 +316,7 @@ const MiddleContent = ({ song }) => {
                       textAlign: "center",
                       color: theme.palette.text.primary,
                     }}
+                    className="album-title"
                   >
                     {album.title}
                   </Typography>
@@ -306,6 +328,7 @@ const MiddleContent = ({ song }) => {
                   color: theme.palette.text.primary,
                   textAlign: "center",
                 }}
+                className="no-albums-text"
               >
                 Không có album nào
               </Typography>
@@ -323,6 +346,7 @@ const MiddleContent = ({ song }) => {
             maxWidth: "600px",
             marginTop: "16px",
           }}
+          className="pagination-controls"
         >
           <Button
             variant="contained"
@@ -333,10 +357,14 @@ const MiddleContent = ({ song }) => {
               backgroundColor: "#1e90ff",
               color: "#fff",
             }}
+            className="pagination-button"
           >
             Previous
           </Button>
-          <Typography sx={{ color: theme.palette.text.primary }}>
+          <Typography
+            sx={{ color: theme.palette.text.primary }}
+            className="pagination-text"
+          >
             Page {page} of {totalPages}
           </Typography>
           <Button
@@ -348,6 +376,7 @@ const MiddleContent = ({ song }) => {
               backgroundColor: "#1e90ff",
               color: "#fff",
             }}
+            className="pagination-button"
           >
             Next
           </Button>

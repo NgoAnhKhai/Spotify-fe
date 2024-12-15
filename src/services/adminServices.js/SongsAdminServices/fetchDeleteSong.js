@@ -1,6 +1,6 @@
 import apiService from "../../../api/apiService";
 
-export const fetchDeleteSong = async (songId) => {
+export const fetchSongDelete = async (songId) => {
   try {
     const token = localStorage.getItem("token");
     if (!token) throw new Error("Token không tồn tại.");

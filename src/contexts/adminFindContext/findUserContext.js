@@ -1,19 +1,13 @@
-import React, { createContext, useState, useContext } from "react";
+import React, { createContext, useState } from "react";
 
-const UserContext = createContext();
+export const NameContext = createContext();
 
-export const useUser = () => useContext(UserContext);
-
-export const UserProvider = ({ children }) => {
-  const [searchResults, setSearchResults] = useState([]);
-
-  const updateSearchResults = (results) => {
-    setSearchResults(results);
-  };
+export const NameProvider = ({ children }) => {
+  const [name, setName] = useState("");
 
   return (
-    <UserContext.Provider value={{ searchResults, updateSearchResults }}>
+    <NameContext.Provider value={{ name, setName }}>
       {children}
-    </UserContext.Provider>
+    </NameContext.Provider>
   );
 };

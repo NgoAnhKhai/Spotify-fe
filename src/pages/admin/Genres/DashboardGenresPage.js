@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-import MainHeader from "../../../layout/MainHeader";
+import React, { useContext, useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -23,6 +22,7 @@ import {
   MenuItem,
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import RefreshIcon from "@mui/icons-material/Refresh";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 
@@ -30,6 +30,8 @@ import { useNavigate } from "react-router-dom";
 import { fetchGetAllGenres } from "../../../services/adminServices.js/GenresAdminServices.js/fetchAllGenres";
 import { fetchDeleteGenre } from "../../../services/adminServices.js/GenresAdminServices.js/fetchDeleteGenres";
 import { fetchUpdateGenres } from "../../../services/adminServices.js/GenresAdminServices.js/fetchUpdateGenres";
+import { GenreContext } from "../../../contexts/adminFindContext/findGenreContext";
+import GenreHeader from "../../../components/headerAdmin/GenreHeader";
 
 const DashboardGenresPage = () => {
   const [genres, setGenres] = useState([]);
@@ -47,6 +49,7 @@ const DashboardGenresPage = () => {
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [anchorEl, setAnchorEl] = useState(null);
   const openMenu = Boolean(anchorEl);
+  const { genreName, setGenreName } = useContext(GenreContext);
   const navigate = useNavigate();
   const loadGenres = async (currentPage = 1) => {
     setLoading(true);
@@ -91,6 +94,11 @@ const DashboardGenresPage = () => {
     setOpenDeleteDialog(false);
     setGenreToDelete(null);
   };
+  const handleRefresh = () => {
+    setGenreName(null);
+    setPage(1);
+    loadGenres(1);
+  };
 
   const handleSaveChanges = async () => {
     if (genreToEdit) {
@@ -121,7 +129,9 @@ const DashboardGenresPage = () => {
               : genre;
           })
         );
-
+        if (genreName && genreName._id === genreToEdit._id) {
+          setGenreName({ ...genreName, ...updatedGenre });
+        }
         setSnackbarMessage("Genre updated successfully!");
         setSnackbarSeverity("success");
       } catch (error) {
@@ -135,7 +145,9 @@ const DashboardGenresPage = () => {
   };
 
   useEffect(() => {
-    loadGenres(page);
+    if (!genreName) {
+      loadGenres(page);
+    }
   }, [page]);
 
   // Delete Genre
@@ -191,7 +203,25 @@ const DashboardGenresPage = () => {
   };
   return (
     <div>
+      <GenreHeader />
       <div className="dashboard-container">
+        {genreName && (
+          <Alert
+            severity="info"
+            action={
+              <IconButton
+                aria-label="refresh"
+                size="small"
+                onClick={handleRefresh}
+                color="inherit"
+              >
+                <RefreshIcon fontSize="inherit" />
+              </IconButton>
+            }
+          >
+            Showing results for: <strong>{genreName.name}</strong>
+          </Alert>
+        )}
         <TableContainer component={Paper}>
           <Table sx={{ borderCollapse: "collapse" }}>
             <TableHead>
@@ -291,6 +321,40 @@ const DashboardGenresPage = () => {
                 <TableRow>
                   <TableCell colSpan={7} sx={{ textAlign: "center" }}>
                     <CircularProgress />
+                  </TableCell>
+                </TableRow>
+              ) : genreName ? (
+                <TableRow>
+                  <TableCell
+                    sx={{ border: "1px solid #ddd", textAlign: "center" }}
+                  >
+                    1
+                  </TableCell>
+                  <TableCell
+                    sx={{ border: "1px solid #ddd", textAlign: "center" }}
+                  >
+                    {genreName.name}
+                  </TableCell>
+                  <TableCell
+                    sx={{ border: "1px solid #ddd", textAlign: "center" }}
+                  >
+                    {genreName.description}
+                  </TableCell>
+                  <TableCell
+                    sx={{ border: "1px solid #ddd", textAlign: "center" }}
+                  >
+                    <IconButton
+                      color="primary"
+                      onClick={() => openEditDialogHandler(genreName)}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton
+                      color="secondary"
+                      onClick={() => openDeleteDialogHandler(genreName._id)}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
                   </TableCell>
                 </TableRow>
               ) : (

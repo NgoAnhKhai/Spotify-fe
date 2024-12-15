@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-
+import React, { useContext, useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -25,11 +24,14 @@ import {
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-
+import RefreshIcon from "@mui/icons-material/Refresh";
 import { useNavigate } from "react-router-dom";
-import { fetchGetAllSongs } from "../../../services/adminServices.js/SongsAdminServices/fetchGetAllSongs";
-import { fetchUpdateSong } from "../../../services/adminServices.js/SongsAdminServices/fetchUpdateSong";
-import { fetchDeleteSong } from "../../../services/adminServices.js/SongsAdminServices/fetchDeleteArtist";
+
+import SongHeader from "../../../components/headerAdmin/SongHeader";
+import { SongContext } from "../../../contexts/adminFindContext/findSongContext";
+import { fetchGetAllSong } from "../../../services/songService";
+import { fetchSongUpdate } from "../../../services/adminServices.js/SongsAdminServices/fetchSongUpdate";
+import { fetchSongDelete } from "../../../services/adminServices.js/SongsAdminServices/fetchDeleteSong";
 
 const DashboardSongsPage = () => {
   const [songs, setSongs] = useState([]);
@@ -48,13 +50,16 @@ const DashboardSongsPage = () => {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [anchorEl, setAnchorEl] = useState(null);
+  const { songTitle, setSongTitle } = useContext(SongContext);
   const openMenu = Boolean(anchorEl);
   const navigate = useNavigate();
 
   const loadSongs = async (currentPage = 1) => {
     setLoading(true);
     try {
-      const data = await fetchGetAllSongs(currentPage, 5);
+      const data = await fetchGetAllSong(currentPage, 5);
+      console.log("data", data);
+
       setSongs(data.songs);
       setTotalPages(data.pagination.totalPages);
     } catch (error) {
@@ -132,7 +137,7 @@ const DashboardSongsPage = () => {
 
       try {
         // Update song details
-        await fetchUpdateSong(songToEdit._id, updatedSong);
+        await fetchSongUpdate(songToEdit._id, updatedSong);
         setSongs((prevSongs) =>
           prevSongs.map((song) => {
             return song._id === songToEdit._id
@@ -140,6 +145,9 @@ const DashboardSongsPage = () => {
               : song;
           })
         );
+        if (songTitle && songTitle._id === songToEdit._id) {
+          setSongTitle({ ...songTitle, ...updatedSong });
+        }
         setSnackbarMessage("Song updated successfully!");
         setSnackbarSeverity("success");
       } catch (error) {
@@ -151,16 +159,22 @@ const DashboardSongsPage = () => {
       }
     }
   };
-
+  const handleRefresh = () => {
+    setSongTitle(null);
+    setPage(1);
+    loadSongs(1);
+  };
   useEffect(() => {
-    loadSongs(page);
+    if (!setSongTitle) {
+      loadSongs(page);
+    }
   }, [page]);
 
   // Delete Song
   const handleDeleteSong = async () => {
     if (songToDelete) {
       try {
-        await fetchDeleteSong(songToDelete);
+        await fetchSongDelete(songToDelete);
         setSongs((prevSongs) =>
           prevSongs.filter((song) => song._id !== songToDelete)
         );
@@ -203,15 +217,31 @@ const DashboardSongsPage = () => {
   const handleMenuClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
-
-  // Close menu when clicking on a menu item
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
 
   return (
     <div>
+      <SongHeader />
       <div className="dashboard-container">
+        {songTitle && (
+          <Alert
+            severity="info"
+            action={
+              <IconButton
+                aria-label="refresh"
+                size="small"
+                onClick={handleRefresh}
+                color="inherit"
+              >
+                <RefreshIcon fontSize="inherit" />
+              </IconButton>
+            }
+          >
+            Showing results for: <strong>{songTitle.name}</strong>
+          </Alert>
+        )}
         <TableContainer component={Paper}>
           <Table sx={{ borderCollapse: "collapse" }}>
             <TableHead>
@@ -331,6 +361,56 @@ const DashboardSongsPage = () => {
                 <TableRow>
                   <TableCell colSpan={7} sx={{ textAlign: "center" }}>
                     <CircularProgress />
+                  </TableCell>
+                </TableRow>
+              ) : songTitle ? (
+                <TableRow key={songTitle._id}>
+                  <TableCell
+                    sx={{ border: "1px solid #ddd", textAlign: "center" }}
+                  >
+                    1
+                  </TableCell>
+                  <TableCell
+                    sx={{ border: "1px solid #ddd", textAlign: "center" }}
+                  >
+                    {songTitle.title}
+                  </TableCell>
+                  <TableCell
+                    sx={{ border: "1px solid #ddd", textAlign: "center" }}
+                  >
+                    {songTitle.duration}
+                  </TableCell>
+                  <TableCell
+                    sx={{ border: "1px solid #ddd", textAlign: "center" }}
+                  >
+                    {songTitle.popularity}
+                  </TableCell>
+                  <TableCell
+                    sx={{ border: "1px solid #ddd", textAlign: "center" }}
+                  >
+                    <a
+                      href={songTitle.URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {songTitle.URL}
+                    </a>
+                  </TableCell>
+                  <TableCell
+                    sx={{ border: "1px solid #ddd", textAlign: "center" }}
+                  >
+                    <IconButton
+                      color="primary"
+                      onClick={() => openEditDialogHandler(songTitle)}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton
+                      color="secondary"
+                      onClick={() => openDeleteDialogHandler(songTitle._id)}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
                   </TableCell>
                 </TableRow>
               ) : (

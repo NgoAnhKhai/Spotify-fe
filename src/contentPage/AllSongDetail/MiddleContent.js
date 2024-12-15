@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import {
   Box,
   Typography,
-  CircularProgress,
   useTheme,
   Button,
   Snackbar,
@@ -172,7 +171,6 @@ export default function MiddleContent() {
   return (
     <Box
       sx={{
-        overflowY: "auto",
         minHeight: "100vh",
         height: "calc(100vh - 100px)",
         borderRadius: "10px",
@@ -184,18 +182,6 @@ export default function MiddleContent() {
         width: "100%",
         color: theme.palette.text.primary,
         p: 4,
-        "&::-webkit-scrollbar": {
-          width: "8px",
-        },
-        "&::-webkit-scrollbar-thumb": {
-          backgroundColor: "#6200ea",
-          borderRadius: "10px",
-        },
-        "&::-webkit-scrollbar-track": {
-          backgroundColor: "#e0e0e0",
-        },
-        scrollbarWidth: "thin",
-        scrollbarColor: "#6200ea #e0e0e0",
       }}
     >
       {/* Top result with Refresh button */}
@@ -225,6 +211,7 @@ export default function MiddleContent() {
           <Box
             sx={{
               display: "flex",
+
               backgroundColor:
                 theme.palette.mode === "dark" ? "#121212" : "#e0e0e0",
               borderRadius: "8px",
