@@ -10,18 +10,12 @@ import {
   DialogContent,
   DialogActions,
   useMediaQuery,
-  Alert,
-  Snackbar,
 } from "@mui/material";
 import { ArrowLeft as ArrowLeftIcon } from "@mui/icons-material";
 import styled from "styled-components";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { fetchAlbumById } from "../../services/albumService";
-import {
-  fetchFollowArtist,
-  fetchUnfollowArtist,
-} from "../../services/favoriteArtists";
 
 function RightSideBar() {
   const [drawerWidth, setDrawerWidth] = useState(240);
@@ -31,7 +25,7 @@ function RightSideBar() {
   const [album, setAlbum] = useState({});
   const [open, setOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(true);
-  const [song, setSong] = useState({});
+  const [setSong] = useState({});
   const [Loading, setLoading] = useState(true);
   const isMobile = useMediaQuery("(max-width:600px)");
   const { id } = useParams();

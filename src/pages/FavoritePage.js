@@ -13,7 +13,6 @@ import {
   fetchUnfollowArtist,
 } from "../services/favoriteArtists";
 import LeftSideBar from "../components/sidebar/LeftSideBar";
-import RightSideBar from "../components/sidebar/RightSideBar";
 
 const FavoritePage = () => {
   const [favoriteArtists, setFavoriteArtists] = useState([]);
