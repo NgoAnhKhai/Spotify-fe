@@ -15,7 +15,7 @@ import {
   Avatar,
   Button,
 } from "@mui/material";
-import FavoriteIcon from "@mui/icons-material/Favorite";
+
 import SearchIcon from "@mui/icons-material/Search";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import HomeIcon from "@mui/icons-material/Home";
@@ -196,22 +196,6 @@ export default function MainHeader() {
               className="dark-mode-toggle"
             >
               {darkMode ? <Brightness7 /> : <Brightness4 />}
-            </IconButton>
-
-            <IconButton
-              color="inherit"
-              sx={{
-                color: "#fff",
-                marginLeft: "16px",
-                fontSize: "30px",
-                "&:hover": {
-                  transform: "scale(1.1)",
-                },
-              }}
-              className="heart-icon-button"
-              onClick={() => navigate("/users/favorites")}
-            >
-              <FavoriteIcon />
             </IconButton>
 
             <IconButton

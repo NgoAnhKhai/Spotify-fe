@@ -71,6 +71,7 @@ export default function MiddleContent() {
   useEffect(() => {
     loadSongs();
     loadUserPlaylists();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -325,7 +326,7 @@ export default function MiddleContent() {
             left: "50%",
             transform: "translate(-50%, -50%)",
             backgroundColor:
-              theme.palette.mode === "dark" ? "#424242" : "#ffffff", // Nền modal sáng hơn hoặc tối hơn tùy theo chế độ sáng tối
+              theme.palette.mode === "dark" ? "#424242" : "#ffffff",
             borderRadius: "8px",
             padding: "20px",
             boxShadow: 24,

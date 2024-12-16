@@ -1,5 +1,5 @@
 import "../../App.css";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Drawer,
   Divider,
@@ -54,36 +54,39 @@ function LeftSideBar() {
 
     fetchData();
   }, [user]);
-
-  const startResize = () => {
+  const startResize = useCallback(() => {
     setIsResizing(true);
     document.body.style.cursor = "ew-resize";
-  };
+  }, []);
 
-  const stopResize = () => {
+  const stopResize = useCallback(() => {
     setIsResizing(false);
     document.body.style.cursor = "default";
-  };
+  }, []);
 
-  const handleResize = (e) => {
-    if (isResizing) {
-      const newWidth = e.clientX;
-      if (newWidth >= 200 && newWidth <= 500) {
-        setDrawerWidth(newWidth);
+  const handleResize = useCallback(
+    (e) => {
+      if (isResizing) {
+        const newWidth = e.clientX;
+        if (newWidth >= 200 && newWidth <= 500) {
+          setDrawerWidth(newWidth);
+        }
       }
-    }
-  };
+    },
+    [isResizing]
+  );
 
   useEffect(() => {
     if (isResizing) {
       window.addEventListener("mouseup", stopResize);
       window.addEventListener("mousemove", handleResize);
     }
+
     return () => {
       window.removeEventListener("mousemove", handleResize);
       window.removeEventListener("mouseup", stopResize);
     };
-  }, [isResizing]);
+  }, [isResizing, handleResize, stopResize]);
 
   const toggleDrawerSize = () => {
     setIsDrawerOpen(!isDrawerOpen);

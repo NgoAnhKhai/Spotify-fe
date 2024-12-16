@@ -20,22 +20,7 @@ const MainStartSong = () => {
   const navigate = useNavigate();
   const { currentSong, setCurrentSong, playlist } =
     useContext(MusicPlayerContext);
-  const [isIpad, setIsIpad] = useState(false);
-  useEffect(() => {
-    const handleResize = () => {
-      const isIpadAir =
-        window.innerWidth >= 820 &&
-        window.innerWidth <= 1024 &&
-        window.innerHeight >= 1180 &&
-        window.innerHeight <= 1366;
 
-      setIsIpad(isIpadAir);
-    };
-
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
   useEffect(() => {
     const handleLogout = () => {
       const token = localStorage.getItem("token");
@@ -78,6 +63,7 @@ const MainStartSong = () => {
         audioRef.current = null;
       };
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentSong]);
 
   const togglePlayPause = () => {
@@ -147,8 +133,6 @@ const MainStartSong = () => {
           position: "fixed",
           backgroundColor: "#121212",
           borderTop: "1px solid #282828",
-          height: isIpad ? "220px" : "0px",
-          padding: isIpad ? "16px" : "60px",
           height: isMobile ? "150px" : "0px",
           padding: isMobile ? "20px" : "60px",
           bottom: "0px",

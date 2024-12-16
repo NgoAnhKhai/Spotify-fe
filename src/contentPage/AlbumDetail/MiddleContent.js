@@ -34,6 +34,7 @@ const MiddleContent = () => {
   const [openRemoveModal, setOpenRemoveModal] = useState(false);
   const [selectedSongID, setSelectedSongID] = useState(null);
   const [playlistsContainSong, setPlaylistsContainSong] = useState([]);
+  // eslint-disable-next-line no-unused-vars
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { setPlaylist, setCurrentSong } = useContext(MusicPlayerContext);

@@ -26,7 +26,8 @@ function RightSideBar() {
   const [open, setOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(true);
   const [setSong] = useState({});
-  const [Loading, setLoading] = useState(true);
+  // eslint-disable-next-line no-unused-vars
+  const [loading, setLoading] = useState(true);
   const isMobile = useMediaQuery("(max-width:600px)");
   const { id } = useParams();
   const navigate = useNavigate();
@@ -50,7 +51,7 @@ function RightSideBar() {
       }
     };
     loadAlbum();
-  }, [id]);
+  }, [id, setAlbum, setAristID, setSong, setLoading]);
 
   const startResize = () => {
     setIsResizing(true);
@@ -62,24 +63,23 @@ function RightSideBar() {
     document.body.style.cursor = "default";
   };
 
-  const handleResize = (e) => {
-    if (isResizing) {
-      const newWidth = window.innerWidth - e.clientX;
-      if (newWidth >= 200 && newWidth <= 500) {
-        setDrawerWidth(newWidth);
-      }
-    }
-  };
-
   useEffect(() => {
     if (isResizing) {
+      const handleResize = (e) => {
+        const newWidth = e.clientX;
+        if (newWidth >= 200 && newWidth <= 500) {
+          setDrawerWidth(newWidth);
+        }
+      };
+
       window.addEventListener("mousemove", handleResize);
       window.addEventListener("mouseup", stopResize);
+
+      return () => {
+        window.removeEventListener("mousemove", handleResize);
+        window.removeEventListener("mouseup", stopResize);
+      };
     }
-    return () => {
-      window.removeEventListener("mousemove", handleResize);
-      window.removeEventListener("mouseup", stopResize);
-    };
   }, [isResizing]);
 
   const toggleDrawerSize = () => {

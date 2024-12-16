@@ -311,25 +311,6 @@ const ArtistDetailPage = () => {
           >
             Followers:{artist.followersCount}
           </Typography>
-          <Button
-            variant="contained"
-            sx={{
-              backgroundColor: "#fff",
-              color: "#000",
-              fontWeight: "bold",
-              textTransform: "none",
-              borderRadius: "15px",
-              padding: "4px 8px",
-              width: "auto",
-              mt: 1,
-              "&:hover": {
-                backgroundColor: "#fff",
-                color: "#000",
-              },
-            }}
-          >
-            follow
-          </Button>
         </Box>
       </Box>
 
