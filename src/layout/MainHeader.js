@@ -1,5 +1,5 @@
 import "../App.css";
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Snackbar, Alert } from "@mui/material";
 import {
   styled,
@@ -27,7 +27,8 @@ import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import { AdminPanelSettings as AdminIcon } from "@mui/icons-material";
 import { fetchSearchSong } from "../services/songService";
 import { useSearch } from "../contexts/SearchContext";
-
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
   borderRadius: "20px",
@@ -80,6 +81,7 @@ export default function MainHeader() {
   const navigate = useNavigate();
   const { darkMode, toggleDarkMode } = useContext(ThemeContext);
   const { user, signout } = useAuth();
+
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [authAnchorEl, setAuthAnchorEl] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -118,26 +120,27 @@ export default function MainHeader() {
 
   const handleSearchKeyPress = async (event) => {
     if (event.key === "Enter" && searchQuery.trim() !== "") {
-      navigate(`/songs?title=${encodeURIComponent(searchQuery)}`);
-
       try {
         const results = await fetchSearchSong({ title: searchQuery });
         if (results.songs && results.songs.length > 0) {
-          updateSearchResults(results.songs);
-          navigate("/songs");
+          updateSearchResults(results.songs); // Đồng bộ kết quả tìm kiếm
+          setSnackbarMessage(`Tìm thấy ${results.songs.length} bài hát.`);
+          setSnackbarSeverity("success");
         } else {
+          updateSearchResults([]); // Không có kết quả
           setSnackbarMessage("Không có bài hát nào tìm thấy!");
           setSnackbarSeverity("error");
-          setSnackbarOpen(true);
         }
       } catch (error) {
         console.error("Error searching songs:", error);
-        setSnackbarMessage("Không có bài hát nào tìm thấy!");
+        setSnackbarMessage("Lỗi khi tìm kiếm bài hát!");
         setSnackbarSeverity("error");
+      } finally {
         setSnackbarOpen(true);
       }
     }
   };
+
   const handleMusicIconClick = () => {
     if (!user) {
       setSnackbarMessage("Please log in to listen to music.");
@@ -155,6 +158,16 @@ export default function MainHeader() {
       setSnackbarMessage("You do not have permission to access this page.");
       setSnackbarSeverity("warning");
       setSnackbarOpen(true);
+    }
+  };
+  const handleFavoriteClick = () => {
+    if (!user) {
+      setSnackbarMessage("Vui lòng đăng nhập để thêm vào yêu thích.");
+      setSnackbarSeverity("warning");
+      setSnackbarOpen(true);
+      navigate("/login");
+    } else {
+      navigate("/me/favorites");
     }
   };
 
@@ -197,23 +210,41 @@ export default function MainHeader() {
             >
               {darkMode ? <Brightness7 /> : <Brightness4 />}
             </IconButton>
-
+            {user && user.role === "admin" && (
+              <IconButton
+                color="inherit"
+                onClick={handleAdminClick}
+                sx={{
+                  color: "#fff",
+                  marginLeft: "16px",
+                  fontSize: "30px",
+                  "&:hover": {
+                    transform: "scale(1.1)",
+                  },
+                }}
+                className="admin-icon-button"
+              >
+                <AdminIcon />
+              </IconButton>
+            )}
+            {/*favorite Icon */}
             <IconButton
               color="inherit"
-              onClick={handleAdminClick}
+              onClick={handleFavoriteClick}
               sx={{
-                color: "#fff",
-                marginLeft: "16px",
-                fontSize: "30px",
-                "&:hover": {
-                  transform: "scale(1.1)",
-                },
+                marginLeft: "8px",
+                transition: "color 0.3s",
               }}
-              className="admin-icon-button"
+              className="favorite-icon-button"
             >
-              <AdminIcon />
+              {user &&
+              user.favoriteArtists &&
+              user.favoriteArtists.length > 0 ? (
+                <FavoriteIcon />
+              ) : (
+                <FavoriteBorderIcon />
+              )}
             </IconButton>
-
             {/* Home, Search and Note Icon */}
             <Box
               sx={{

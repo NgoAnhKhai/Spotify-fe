@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+// src/components/RightSideBar.jsx
+import React, { useState, useEffect, useCallback, useContext } from "react";
 import {
   Drawer,
   Divider,
@@ -10,77 +11,185 @@ import {
   DialogContent,
   DialogActions,
   useMediaQuery,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import { ArrowLeft as ArrowLeftIcon } from "@mui/icons-material";
 import styled from "styled-components";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useMatch, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { fetchAlbumById } from "../../services/albumService";
+import { fetchFollowingArtist } from "../../services/favorites/followArtists";
+import { fetchUnfollowingArtists } from "../../services/favorites/unfollowArtists";
+import { isFollowingArtist } from "../../services/favorites/fetchIsFollowingArtist";
+import { MusicPlayerContext } from "../../contexts/MusicPlayerContext";
+import ScrollComponent from "../Scroll/ScrollContainer";
+import SongInfo from "../../info/SongInfo";
+import AlbumInfo from "../../info/AlbumInfo";
+import { fetchArtistById } from "../../services/artistService";
+import ArtistInfo from "../../info/ArtistInfo";
 
 function RightSideBar() {
   const [drawerWidth, setDrawerWidth] = useState(240);
   const [isResizing, setIsResizing] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [artist, setAristID] = useState({});
-  const [album, setAlbum] = useState({});
+  const [album, setAlbum] = useState(null); // Khởi tạo với null để dễ kiểm tra
   const [open, setOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(true);
-  const [setSong] = useState({});
-  // eslint-disable-next-line no-unused-vars
+  const { currentSong, setCurrentSong } = useContext(MusicPlayerContext);
   const [loading, setLoading] = useState(true);
   const isMobile = useMediaQuery("(max-width:600px)");
   const { id } = useParams();
   const navigate = useNavigate();
-  const navigateLogin = () => {
-    navigate("/login");
-  };
   const { user } = useAuth();
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  // Thêm state cho nghệ sĩ
+  const [artist, setArtist] = useState(null);
+  const [artistLoading, setArtistLoading] = useState(false);
+  const [artistError, setArtistError] = useState(null);
+  // Xác định loại trang hiện tại
+  const matchArtist = useMatch("/artist/:id");
+  const matchAlbum = useMatch("/album/:id");
 
-  useEffect(() => {
-    const loadAlbum = async () => {
-      try {
-        const albumData = await fetchAlbumById(id);
-        console.log("albumData", albumData);
-        setAlbum(albumData);
-        setAristID(albumData.artistID.description);
-
-        setSong(albumData.listSong);
-        setLoading(false);
-      } catch (error) {
-        setLoading(false);
-      }
-    };
-    loadAlbum();
-  }, [id, setAlbum, setAristID, setSong, setLoading]);
-
-  const startResize = () => {
+  // Resize Handlers
+  const startResize = useCallback(() => {
     setIsResizing(true);
     document.body.style.cursor = "ew-resize";
-  };
+    document.body.style.userSelect = "none";
+  }, []);
 
-  const stopResize = () => {
+  const stopResize = useCallback(() => {
     setIsResizing(false);
     document.body.style.cursor = "default";
-  };
+    document.body.style.userSelect = "auto";
+  }, []);
 
-  useEffect(() => {
-    if (isResizing) {
-      const handleResize = (e) => {
-        const newWidth = e.clientX;
+  const handleResize = useCallback(
+    (e) => {
+      if (isResizing) {
+        const newWidth = window.innerWidth - e.clientX;
         if (newWidth >= 200 && newWidth <= 500) {
           setDrawerWidth(newWidth);
         }
-      };
+      }
+    },
+    [isResizing]
+  );
 
-      window.addEventListener("mousemove", handleResize);
+  useEffect(() => {
+    const loadData = async () => {
+      if (matchArtist) {
+        const artistId = matchArtist.params.id;
+        if (!artistId) {
+          setArtist(null);
+          setArtistLoading(false);
+          return;
+        }
+
+        setArtistLoading(true);
+        try {
+          const response = await fetchArtistById(artistId);
+          if (response.success) {
+            setArtist(response.artist);
+            if (user && response.artist._id) {
+              const followingStatus = await isFollowingArtist(
+                response.artist._id
+              );
+              setIsFollowing(followingStatus.isFollowing);
+            }
+          } else {
+            setArtistError("Không tìm thấy nghệ sĩ.");
+          }
+        } catch (error) {
+          console.error("Error fetching artist:", error);
+          setArtistError("Đã xảy ra lỗi khi tải dữ liệu nghệ sĩ.");
+        } finally {
+          setArtistLoading(false);
+        }
+      } else if (matchAlbum) {
+        // Trang album
+        const albumId = matchAlbum.params.id;
+        if (!albumId) {
+          setAlbum(null);
+          setLoading(false);
+          return;
+        }
+
+        setLoading(true);
+        try {
+          const albumData = await fetchAlbumById(albumId);
+          console.log("albumData", albumData);
+
+          setAlbum(albumData);
+
+          if (user && albumData.artistID && albumData.artistID._id) {
+            const followingStatus = await isFollowingArtist(
+              albumData.artistID._id
+            );
+            console.log("Following Status:", followingStatus.isFollowing);
+            setIsFollowing(followingStatus.isFollowing);
+          }
+
+          setLoading(false);
+        } catch (error) {
+          console.error("Error loading album and follow status:", error);
+          setLoading(false);
+        }
+      } else {
+        // Không phải trang nghệ sĩ hoặc album
+        setArtist(null);
+        setAlbum(null);
+        setArtistLoading(false);
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [matchArtist, matchAlbum, user]);
+
+  useEffect(() => {
+    if (isResizing) {
       window.addEventListener("mouseup", stopResize);
-
-      return () => {
-        window.removeEventListener("mousemove", handleResize);
-        window.removeEventListener("mouseup", stopResize);
-      };
+      window.addEventListener("mousemove", handleResize);
     }
-  }, [isResizing]);
+
+    return () => {
+      window.removeEventListener("mousemove", handleResize);
+      window.removeEventListener("mouseup", stopResize);
+    };
+  }, [isResizing, handleResize, stopResize]);
+
+  const handleFollowClick = async () => {
+    if (!user) {
+      setOpen(true);
+      return;
+    }
+
+    try {
+      if (isFollowing) {
+        await fetchUnfollowingArtists(album.artistID._id);
+        setIsFollowing(false);
+        setSnackbarMessage("Huỷ theo dõi nghệ sĩ thành công!");
+      } else {
+        await fetchFollowingArtist(album.artistID._id);
+        setIsFollowing(true);
+        setSnackbarMessage("Theo dõi nghệ sĩ thành công!");
+      }
+
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+    } catch (err) {
+      console.error("Error in follow/unfollow:", err);
+      setSnackbarMessage(
+        err.message || "Đã xảy ra lỗi khi cập nhật trạng thái theo dõi."
+      );
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    }
+  };
 
   const toggleDrawerSize = () => {
     setIsDrawerOpen(!isDrawerOpen);
@@ -118,55 +227,164 @@ function RightSideBar() {
     },
   }));
 
+  const navigateLogin = () => {
+    navigate("/login");
+  };
+
   return (
     <Box
       sx={{
         position: "relative",
-        height: "100vh",
-        overflow: "hidden",
+        height: "100%",
       }}
       className="right-side-bar"
     >
       <Drawer
         sx={{
           width: drawerWidth,
-          position: "relative",
           flexShrink: 0,
           "& .MuiDrawer-paper": {
             width: drawerWidth,
             backgroundColor: "#121212",
+            transition: "all 0.3s ease",
             border: "none",
             color: "white",
             borderRadius: "10px",
-            position: "relative",
-            transition: "all 0.3s ease",
+            position: "unset",
+            maxHeight: "75vh",
+            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
+
+            zIndex: 1201,
           },
         }}
         variant="permanent"
-        anchor="left"
+        anchor="right"
         className="drawer"
       >
-        <div className="RightSideBar">
-          <Box sx={{ padding: "16px", textAlign: "center" }}>
-            <Button
-              onClick={toggleDrawerSize}
-              variant="h6"
-              component="div"
-              sx={{ borderRadius: "10px", fontWeight: "bold", color: "#fff" }}
-            >
-              Artist
-            </Button>
-          </Box>
-          <Divider sx={{ backgroundColor: "grey" }} />
+        <Box sx={{ padding: "16px", textAlign: "center" }}>
+          <Button
+            onClick={toggleDrawerSize}
+            variant="h6"
+            component="div"
+            sx={{ borderRadius: "10px", fontWeight: "bold", color: "#fff" }}
+          >
+            Artist
+          </Button>
+        </Box>
+        <Divider sx={{ backgroundColor: "grey" }} />
 
+        <ScrollComponent>
           {user ? (
-            !id ? (
+            matchArtist || matchAlbum ? (
+              <Box>
+                {/* Nếu là trang album */}
+                {matchAlbum && (
+                  <>
+                    {!loading && album ? (
+                      <AlbumInfo
+                        album={album}
+                        isFollowing={isFollowing}
+                        handleFollowClick={handleFollowClick}
+                      />
+                    ) : (
+                      // Hiển thị thông báo khi đang tải dữ liệu album
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          height: "calc(100vh - 400px)",
+                          backgroundColor: "#1e1e1e",
+                          padding: "16px",
+                          borderRadius: "15px",
+                          mt: 2,
+                        }}
+                      >
+                        <Typography
+                          fontWeight="bold"
+                          variant="body1"
+                          sx={{ color: "white", textAlign: "center" }}
+                        >
+                          Đang tải album...
+                        </Typography>
+                      </Box>
+                    )}
+                  </>
+                )}
+
+                {/* Nếu là trang nghệ sĩ */}
+                {matchArtist && (
+                  <>
+                    {artistLoading ? (
+                      // Hiển thị thông báo khi đang tải dữ liệu nghệ sĩ
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          height: "calc(100vh - 400px)",
+                          backgroundColor: "#1e1e1e",
+                          padding: "16px",
+                          borderRadius: "15px",
+                          mt: 2,
+                        }}
+                      >
+                        <Typography
+                          fontWeight="bold"
+                          variant="body1"
+                          sx={{ color: "white", textAlign: "center" }}
+                        >
+                          Đang tải thông tin nghệ sĩ...
+                        </Typography>
+                      </Box>
+                    ) : artist ? (
+                      // Hiển thị thông tin nghệ sĩ
+                      <ArtistInfo
+                        artist={artist}
+                        isFollowing={isFollowing}
+                        handleFollowClick={handleFollowClick}
+                      />
+                    ) : artistError ? (
+                      // Hiển thị thông báo lỗi nếu có
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          height: "calc(100vh - 400px)",
+                          backgroundColor: "#1e1e1e",
+                          padding: "16px",
+                          borderRadius: "15px",
+                          mt: 2,
+                        }}
+                      >
+                        <Typography
+                          fontWeight="bold"
+                          variant="body1"
+                          sx={{ color: "white", textAlign: "center" }}
+                        >
+                          {artistError}
+                        </Typography>
+                      </Box>
+                    ) : null}
+                  </>
+                )}
+              </Box>
+            ) : currentSong ? (
+              <SongInfo
+                song={currentSong}
+                isFollowing={isFollowing}
+                handleFollowClick={handleFollowClick}
+              />
+            ) : (
               <Box
                 sx={{
                   display: "flex",
                   justifyContent: "center",
                   alignItems: "center",
-                  height: user ? "calc(86vh - 400px)" : "100vh",
+                  height: "calc(100vh - 200px)",
                   backgroundColor: "#1e1e1e",
                   padding: "16px",
                   borderRadius: "15px",
@@ -181,91 +399,15 @@ function RightSideBar() {
                   Chào mừng! Hãy thưởng thức âm nhạc của bạn.
                 </Typography>
               </Box>
-            ) : (
-              album &&
-              album.artistID && (
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    height: "calc(100vh - 400px)",
-                    backgroundColor: "#1e1e1e",
-                    padding: "16px",
-                    borderRadius: "15px",
-                    mt: 2,
-                    textAlign: "center",
-                  }}
-                >
-                  {album.artistID.imageURL ? (
-                    <Box
-                      component="img"
-                      src={album.artistID.imageURL}
-                      alt={album.artistID.name}
-                      sx={{
-                        width: "120px",
-                        height: "120px",
-                        borderRadius: "50%",
-                        objectFit: "cover",
-                        mb: 2,
-                      }}
-                    />
-                  ) : (
-                    <Box
-                      sx={{
-                        width: "120px",
-                        height: "120px",
-                        borderRadius: "50%",
-                        backgroundColor: "#333",
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        mb: 2,
-                      }}
-                    >
-                      <Typography>Không có ảnh</Typography>
-                    </Box>
-                  )}
-
-                  <Typography
-                    variant="h5"
-                    sx={{
-                      color: "white",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    <Link
-                      to={`/artists/${album.artistID._id}`}
-                      style={{
-                        color: "white",
-                        textDecoration: "none",
-                      }}
-                    >
-                      {album.artistID.name || "Unknown Artist"}
-                    </Link>
-                  </Typography>
-                  {album.artistID.role && (
-                    <Typography variant="body2" sx={{ color: "grey", mt: 1 }}>
-                      Vai trò: {album.artistID.role}
-                    </Typography>
-                  )}
-                  {album.artistID.genre && (
-                    <Typography variant="body2" sx={{ color: "grey", mt: 1 }}>
-                      Thể loại: {album.artistID.genre}
-                    </Typography>
-                  )}
-                  <Typography>Start Year: {artist.startYear}</Typography>
-                  <Typography>Difficulties: {artist.difficulties}</Typography>
-                </Box>
-              )
             )
           ) : (
+            // Hiển thị thông điệp yêu cầu đăng nhập hoặc khác khi người dùng chưa đăng nhập
             <Box
               sx={{
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
-                height: album ? "calc(100vh - 400px)" : "100vh",
+                height: "calc(100vh - 200px)",
                 backgroundColor: "#1e1e1e",
                 padding: "16px",
                 borderRadius: "15px",
@@ -287,19 +429,6 @@ function RightSideBar() {
                 >
                   Hãy mở bài nhạc và tận hưởng nào
                 </Typography>
-                <Button
-                  sx={{
-                    backgroundColor: "white",
-                    color: "black",
-                    width: "100%",
-                    fontWeight: "bold",
-                  }}
-                  variant="contained"
-                  color="primary"
-                  onClick={() => setOpen(true)}
-                >
-                  Trước tiên hãy đăng nhập
-                </Button>
               </Box>
             </Box>
           )}
@@ -328,16 +457,18 @@ function RightSideBar() {
           <Box
             sx={{
               position: "absolute",
-              left: 0,
-              top: "0",
-              bottom: 0,
-              width: "5px",
+              top: 0,
+              right: drawerWidth - 5,
+              width: "10px",
+              height: "100%",
               cursor: "ew-resize",
-              backgroundColor: "#121212",
+              backgroundColor: "transparent",
+              zIndex: 10,
             }}
             onMouseDown={startResize}
+            className="resize-handle"
           />
-        </div>
+        </ScrollComponent>
       </Drawer>
       {!isMobile && (
         <Button
@@ -368,11 +499,25 @@ function RightSideBar() {
             sx={{
               fontSize: "24px",
               transform: isDrawerOpen ? "rotate(0deg)" : "rotate(180deg)",
-              transition: "transform 0.3s ease",
+              transition: "transform 0.7s ease",
             }}
           />
         </Button>
       )}
+      {/* Snackbar */}
+      <Snackbar
+        open={snackbarOpen}
+        onClose={() => setSnackbarOpen(false)}
+        autoHideDuration={3000}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          severity={snackbarSeverity}
+          onClose={() => setSnackbarOpen(false)}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

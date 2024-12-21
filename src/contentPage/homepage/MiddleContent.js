@@ -11,7 +11,7 @@ import {
   Snackbar,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { fetchAllAlbums } from "../../services/albumService";
+import { fetchAlbumById, fetchAllAlbums } from "../../services/albumService";
 import { PlayCircleFilled as PlayIcon } from "@mui/icons-material";
 import { fetchGetAllSong } from "../../services/songService";
 import { MusicPlayerContext } from "../../contexts/MusicPlayerContext";
@@ -29,7 +29,7 @@ const MiddleContent = ({ song }) => {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const theme = useTheme();
   const { user } = useAuth();
-  const { setCurrentSong } = useContext(MusicPlayerContext);
+  const { setCurrentSong, setPlaylist } = useContext(MusicPlayerContext);
   const isMobile = window.innerWidth <= 600;
   const loadAlbums = async (pageNumber) => {
     setLoading(true);
@@ -48,7 +48,7 @@ const MiddleContent = ({ song }) => {
     setLoading(true);
     try {
       const data = await fetchGetAllSong();
-      console.log("data:", data);
+      setPlaylist(data.songs);
       setSongs(data.songs);
     } catch (error) {
       console.error("Lỗi khi tải bài hát:", error);
@@ -64,6 +64,7 @@ const MiddleContent = ({ song }) => {
       navigate("/login");
     } else {
       setCurrentSong(song);
+      setPlaylist(songs);
       console.log("Playing song:", song.title);
     }
   };
@@ -73,8 +74,20 @@ const MiddleContent = ({ song }) => {
     loadAlbums(page);
   }, [page]);
 
-  const handleClick = (id) => {
+  useEffect(() => {
+    if (songs.length > 0) {
+      setPlaylist(songs);
+    }
+  }, [songs, setPlaylist]);
+
+  const handleClick = async (id) => {
     navigate(`/album/${id}`);
+    try {
+      const albumData = await fetchAlbumById(id);
+      setPlaylist(albumData.songs);
+    } catch (error) {
+      console.error("Lỗi khi tải album:", error);
+    }
   };
 
   const handleNextPage = () => {
@@ -95,8 +108,8 @@ const MiddleContent = ({ song }) => {
         sx={{
           overflowY: "auto",
           borderRadius: "10px",
-          height: isMobile ? "180vh" : "220vh",
-          maxHeight: "calc(100vh - 100px)",
+          height: isMobile ? "180vh" : "70vh",
+          maxHeight: "70vh",
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
@@ -115,60 +128,47 @@ const MiddleContent = ({ song }) => {
       >
         <Box
           sx={{
-            padding: "16px",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
+            width: "100%",
+            marginTop: "16px",
           }}
-          className="top-songs-content"
+          className="songs-container"
         >
           <Typography
             variant="h4"
             sx={{
               fontWeight: "bold",
-              marginBottom: "10px",
-              position: "absolute",
-              top: 0,
-              left: 0,
-              margin: "10px",
+              marginBottom: "16px",
+              textAlign: "center",
             }}
-            className="top-songs-title"
+            className="songs-title"
           >
             Top Songs
           </Typography>
 
-          <Box
-            sx={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: "16px",
-              justifyContent: "space-between",
-              width: "100%",
-            }}
-            className="songs-list"
-          >
+          {/* Sử dụng Grid Container */}
+          <Grid container spacing={2} className="songs-list">
             {loading ? (
               <SkeletonLoader className="skeleton-loader" />
             ) : songs.length > 0 ? (
-              songs.slice(0, 4).map((song, index) => (
-                <Grid key={song._id} className="song-item">
+              songs.slice(0, 4).map((song) => (
+                <Grid item xs={12} sm={6} key={song._id} className="song-item">
                   <Box
                     sx={{
                       display: "flex",
                       alignItems: "center",
-                      top: "25px",
-                      padding: "8px",
+                      padding: "16px",
                       borderRadius: "8px",
-                      transition: "0.3s",
                       backgroundColor:
                         theme.palette.mode === "dark" ? "#121212" : "#e0e0e0",
                       "&:hover": {
                         backgroundColor:
                           theme.palette.mode === "dark" ? "#1e1e1e" : "#d0d0d0",
                         cursor: "pointer",
-                        transform: "scale(1.05)",
                       },
-                      position: "relative",
+                      transition: "all 0.3s ease",
                     }}
                     onClick={() => handleSongClick(song)}
                     className="song-box"
@@ -178,48 +178,46 @@ const MiddleContent = ({ song }) => {
                       src={song.coverImageURL}
                       alt={song.title}
                       sx={{
-                        width: "40px",
-                        height: "40px",
+                        width: "60px",
+                        height: "60px",
                         borderRadius: "4px",
-                        mr: 2,
                         objectFit: "cover",
+                        marginRight: "16px",
                       }}
                       className="song-cover-image"
                     />
-                    <Typography
-                      variant="body1"
-                      sx={{
-                        textAlign: "center",
-                        color: theme.palette.text.primary,
-                        flex: 1,
-                      }}
-                      className="song-title"
-                    >
-                      {song.title}
-                    </Typography>
-
-                    {/* Nút Play */}
+                    <Box sx={{ flex: 1 }}>
+                      <Typography
+                        variant="body1"
+                        sx={{
+                          fontWeight: "bold",
+                          color: theme.palette.text.primary,
+                        }}
+                        className="song-title"
+                      >
+                        {song.title}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: theme.palette.text.secondary,
+                        }}
+                        className="song-artist"
+                      >
+                        {song.artistID.name || "Unknown Artist"}
+                      </Typography>
+                    </Box>
                     <IconButton
                       sx={{
-                        position: "absolute",
-                        right: "8px",
-                        backgroundColor: "rgba(0, 0, 0, 0.5)",
-                        borderRadius: "50%",
-                        opacity: 0,
-                        transition: "opacity 0.3s ease",
-                        color: "white",
-                        "&:hover": {
-                          backgroundColor: "rgba(0, 0, 0, 0.8)",
-                          opacity: 1,
-                          visibility: "visible",
-                        },
+                        color: theme.palette.primary.main,
                       }}
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         handleSongClick(song);
                       }}
                       className="play-button"
                     >
-                      <PlayIcon className="play-icon" />
+                      <PlayIcon />
                     </IconButton>
                   </Box>
                 </Grid>
@@ -229,7 +227,7 @@ const MiddleContent = ({ song }) => {
                 No songs available
               </Typography>
             )}
-          </Box>
+          </Grid>
         </Box>
 
         {/* Feature Section */}

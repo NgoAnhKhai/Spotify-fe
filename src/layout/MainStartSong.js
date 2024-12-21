@@ -1,3 +1,4 @@
+// MainStartSong.jsx
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { Box, IconButton, Slider, Typography } from "@mui/material";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
@@ -7,122 +8,156 @@ import SkipPreviousIcon from "@mui/icons-material/SkipPrevious";
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 import { MusicPlayerContext } from "../contexts/MusicPlayerContext";
 import { useNavigate } from "react-router-dom";
+import { useSearch } from "../contexts/SearchContext";
 
 const MainStartSong = () => {
-  const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(50);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [showThumb, setShowThumb] = useState(false);
   const [isVolumeSliderVisible, setIsVolumeSliderVisible] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const audioRef = useRef(null);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const { searchResults, searchQuery } = useSearch();
+  const audioRef = useRef(new Audio());
   const navigate = useNavigate();
   const { currentSong, setCurrentSong, playlist } =
     useContext(MusicPlayerContext);
 
+  // Xử lý thay đổi kích thước màn hình
   useEffect(() => {
-    const handleLogout = () => {
-      const token = localStorage.getItem("token");
-      if (!token && audioRef.current) {
-        audioRef.current.pause();
-        setIsPlaying(false);
-      }
-    };
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
     };
     handleResize();
-    window.addEventListener("storage", handleLogout);
     window.addEventListener("resize", handleResize);
-    return () => {
-      window.removeEventListener("storage", handleLogout);
-      window.addEventListener("resize", handleResize);
-    };
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Cập nhật src của audio khi currentSong thay đổi
   useEffect(() => {
+    const audio = audioRef.current;
+
     if (currentSong) {
-      const audio = audioRef.current || new Audio(currentSong.URL);
-      audioRef.current = audio;
-
-      audio.onloadedmetadata = () => {
-        setDuration(audio.duration);
-        audio.play();
-        setIsPlaying(true);
-      };
-
-      audio.ontimeupdate = () => {
-        setCurrentTime(audio.currentTime);
-      };
-
-      audio.onended = handleNextSong;
-
-      return () => {
-        audio.pause();
-        audioRef.current = null;
-      };
+      audio.src = currentSong.URL || currentSong.audioURL || "";
+      audio.load();
+      audio
+        .play()
+        .then(() => {
+          setIsPlaying(true);
+        })
+        .catch((error) => {
+          console.error("Error playing audio:", error);
+          setIsPlaying(false);
+        });
+    } else {
+      audio.pause();
+      audio.src = "";
+      setIsPlaying(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentSong]);
 
+  // Thiết lập các sự kiện cho audio
+  useEffect(() => {
+    const audio = audioRef.current;
+
+    const handleLoadedMetadata = () => {
+      setDuration(audio.duration || 0);
+    };
+
+    const handleTimeUpdate = () => {
+      setCurrentTime(audio.currentTime || 0);
+    };
+
+    const handleEnded = () => {
+      handleNextSong();
+    };
+
+    const handlePlay = () => {
+      setIsPlaying(true);
+    };
+
+    const handlePause = () => {
+      setIsPlaying(false);
+    };
+
+    audio.addEventListener("loadedmetadata", handleLoadedMetadata);
+    audio.addEventListener("timeupdate", handleTimeUpdate);
+    audio.addEventListener("ended", handleEnded);
+    audio.addEventListener("play", handlePlay);
+    audio.addEventListener("pause", handlePause);
+
+    return () => {
+      audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
+      audio.removeEventListener("timeupdate", handleTimeUpdate);
+      audio.removeEventListener("ended", handleEnded);
+      audio.removeEventListener("play", handlePlay);
+      audio.removeEventListener("pause", handlePause);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playlist, currentSong]);
+
   const togglePlayPause = () => {
-    if (!audioRef.current) return;
+    const audio = audioRef.current;
+    if (!currentSong) return;
 
     if (isPlaying) {
-      audioRef.current.pause();
+      audio.pause();
     } else {
-      audioRef.current.play();
+      audio.play().catch((error) => {
+        console.error("Error playing audio:", error);
+      });
     }
-    setIsPlaying((prevState) => !prevState);
   };
 
   const handleVolumeChange = (event, newValue) => {
     setVolume(newValue);
-    if (audioRef.current) {
-      audioRef.current.volume = newValue / 100;
-    }
+    audioRef.current.volume = newValue / 100;
   };
 
   const handleSeekChange = (event, newValue) => {
-    if (audioRef.current) {
-      audioRef.current.currentTime = newValue;
-      setCurrentTime(newValue);
-    }
+    audioRef.current.currentTime = newValue;
+    setCurrentTime(newValue);
   };
 
   const handleNextSong = () => {
     if (playlist && playlist.length > 0) {
       const currentIndex = playlist.findIndex(
-        (song) => song._id === currentSong._id
+        (song) => song._id === currentSong?._id
       );
       const nextIndex = (currentIndex + 1) % playlist.length;
       setCurrentSong(playlist[nextIndex]);
+    } else {
+      console.warn("Playlist is empty.");
+      setIsPlaying(false);
     }
   };
 
   const handlePreviousSong = () => {
     if (playlist && playlist.length > 0) {
       const currentIndex = playlist.findIndex(
-        (song) => song._id === currentSong._id
+        (song) => song._id === currentSong?._id
       );
       const previousIndex =
         (currentIndex - 1 + playlist.length) % playlist.length;
       setCurrentSong(playlist[previousIndex]);
+    } else {
+      console.warn("Playlist is empty.");
     }
   };
 
   const formatTime = (time) => {
+    if (isNaN(time)) return "0:00";
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
   };
+
   const navigateToArtist = (artistId) => {
     navigate(`/artists/${artistId}`);
   };
 
   return (
-    <div className="MainStartSong">
+    <Box className="MainStartSong">
       <Box
         sx={{
           display: "flex",
@@ -148,6 +183,7 @@ const MainStartSong = () => {
             padding: "8px 0",
           }}
         >
+          {/* Thông Tin Bài Hát */}
           <Box
             sx={{
               color: "white",
@@ -164,12 +200,16 @@ const MainStartSong = () => {
                   {currentSong.title}
                 </Typography>
                 <Typography
-                  onClick={() => navigateToArtist(currentSong.artistID._id)}
+                  onClick={() =>
+                    navigateToArtist(
+                      currentSong.artistID._id || currentSong.artist._id
+                    )
+                  }
                   color="#4f5370"
                   variant="h7"
                   sx={{ cursor: "pointer" }}
                 >
-                  {currentSong.artistID.name}
+                  {currentSong.artistID?.name || currentSong.artist?.name}
                 </Typography>
 
                 <Typography variant="body2" sx={{ color: "#b3b3b3" }}>
@@ -183,6 +223,7 @@ const MainStartSong = () => {
             )}
           </Box>
 
+          {/* Các Nút Điều Khiển Phát Nhạc */}
           <Box sx={{ display: "flex", alignItems: "center", gap: "16px" }}>
             <IconButton
               onClick={handlePreviousSong}
@@ -216,6 +257,7 @@ const MainStartSong = () => {
             </IconButton>
           </Box>
 
+          {/* Điều Khiển Âm Lượng */}
           <Box
             sx={{
               display: "flex",
@@ -256,8 +298,8 @@ const MainStartSong = () => {
                 orientation={isMobile ? "vertical" : "horizontal"}
                 sx={{
                   color: "#1e90ff",
-                  width: isMobile ? "100%" : "100%",
-                  height: isMobile ? "100%" : "4px",
+                  width: isMobile ? "100%" : "120px",
+                  height: isMobile ? "150px" : "4px",
                   "& .MuiSlider-thumb": {
                     width: isMobile ? "8px" : "12px",
                     height: isMobile ? "8px" : "12px",
@@ -266,7 +308,7 @@ const MainStartSong = () => {
                     width: isMobile ? "2px" : "4px",
                   },
                   "& .MuiSlider-rail": {
-                    width: isMobile ? "4px" : "4px",
+                    width: "4px",
                   },
                 }}
               />
@@ -274,23 +316,15 @@ const MainStartSong = () => {
           </Box>
         </Box>
 
+        {/* Thanh Trượt Thời Gian Bài Hát */}
         <Slider
           value={currentTime}
           max={duration}
           onChange={handleSeekChange}
           sx={{ width: "80%", color: "#1e90ff", marginTop: "8px" }}
-          onMouseEnter={() => setShowThumb(true)}
-          onMouseLeave={() => setShowThumb(false)}
-          componentsProps={{
-            thumb: {
-              style: {
-                display: showThumb ? "block" : "none",
-              },
-            },
-          }}
         />
       </Box>
-    </div>
+    </Box>
   );
 };
 

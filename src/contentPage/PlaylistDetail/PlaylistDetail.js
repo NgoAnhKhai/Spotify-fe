@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import EditIcon from "@mui/icons-material/Edit";
 import {
   Box,
   Typography,
@@ -7,6 +8,8 @@ import {
   IconButton,
   Snackbar,
   Alert,
+  TextField,
+  Button,
 } from "@mui/material";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import CloseIcon from "@mui/icons-material/Close";
@@ -14,7 +17,9 @@ import { MusicPlayerContext } from "../../contexts/MusicPlayerContext";
 import {
   fetchPlaylistById,
   fetchRemoveSongToPlaylist,
+  updatePlaylistCoverImage,
 } from "../../services/playlistService";
+import ImageUploader from "../../components/upload/ImageUpload";
 
 const PlaylistDetail = () => {
   const { id } = useParams();
@@ -29,13 +34,15 @@ const PlaylistDetail = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
   useEffect(() => {
     const loadPlaylist = async () => {
       try {
         const playlistData = await fetchPlaylistById(id);
         setPlaylist(playlistData.playlist);
         setMusicPlaylist(playlistData.playlist.songs);
+        setNewTitle(playlistData.playlist.title);
         setLoading(false);
       } catch (err) {
         setError("Không thể tải playlist");
@@ -53,6 +60,33 @@ const PlaylistDetail = () => {
   if (error) {
     return <div>{error}</div>;
   }
+
+  const handleEditTitle = () => {
+    setIsEditingTitle(true);
+  };
+  const handleSaveTitle = async () => {
+    try {
+      const updatedPlaylist = await updatePlaylistCoverImage(id, {
+        title: newTitle,
+      });
+
+      setPlaylist((prev) => ({
+        ...prev,
+        title: updatedPlaylist.playlist.title,
+      }));
+
+      setIsEditingTitle(false);
+
+      setSnackbarMessage("Cập nhật tiêu đề thành công!");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+    } catch (error) {
+      console.error("Error updating title:", error);
+      setSnackbarMessage("Không thể cập nhật tiêu đề");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    }
+  };
 
   const handleSongClick = (songID) => {
     const songData = playlist.songs.find((song) => song._id === songID);
@@ -77,10 +111,28 @@ const PlaylistDetail = () => {
       setSnackbarOpen(true);
     }
   };
+  const handleUpload = async (file) => {
+    const formData = new FormData();
+    formData.append("coverImage", file);
 
+    try {
+      const updatedPlaylist = await updatePlaylistCoverImage(id, formData);
+      setPlaylist(updatedPlaylist.playlist);
+      setSnackbarMessage("Cập nhật ảnh thành công!");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      setSnackbarMessage("Không thể cập nhật ảnh");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    }
+  };
   return (
     <Box
       sx={{
+        flex: 1,
+        overflowY: "auto",
         padding: 7,
         backgroundColor: theme.palette.background.default,
         background:
@@ -89,9 +141,7 @@ const PlaylistDetail = () => {
             : "linear-gradient(to bottom, #1e90ff 15%, #ffffff)",
         transition: "all 0.3s ease",
         color: theme.palette.text.primary,
-        minHeight: "110vh",
-        height: "100%",
-        width: "100%",
+        maxHeight: "70vh",
         borderRadius: "15px",
         display: "flex",
         flexDirection: "column",
@@ -111,28 +161,49 @@ const PlaylistDetail = () => {
         }}
       >
         {/* Playlist Cover */}
-        <img
-          src={playlist.coverImageURL || "default-image.jpg"}
-          alt={playlist.title}
-          style={{
-            width: "250px",
-            height: "250px",
-            borderRadius: "8px",
-            boxShadow: "4px 4px 10px rgba(0, 0, 0, 0.5)",
-          }}
+        <ImageUploader
+          imageUrl={
+            playlist?.coverImageURL &&
+            `http://localhost:8000${playlist.coverImageURL}`
+          }
+          onUpload={handleUpload}
         />
+
         {/* Playlist Info */}
         <Box sx={{ flex: 1, display: "flex", flexDirection: "column", gap: 2 }}>
-          <Typography
-            variant="h3"
-            sx={{
-              fontWeight: "bold",
-              marginBottom: 1,
-              fontStyle: "italic",
-            }}
-          >
-            {playlist.title}
-          </Typography>
+          {isEditingTitle ? (
+            <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+              <TextField
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                variant="outlined"
+                size="small"
+                sx={{ flex: 1 }}
+              />
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleSaveTitle}
+              >
+                Lưu
+              </Button>
+            </Box>
+          ) : (
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Typography
+                variant="h3"
+                sx={{
+                  fontWeight: "bold",
+                  fontStyle: "italic",
+                }}
+              >
+                {playlist.title}
+              </Typography>
+              <IconButton onClick={handleEditTitle}>
+                <EditIcon />
+              </IconButton>
+            </Box>
+          )}
           <Typography
             variant="h6"
             sx={{
@@ -177,7 +248,7 @@ const PlaylistDetail = () => {
       </Box>
 
       {/* Songs List */}
-      <Box sx={{ flex: 1, overflowY: "auto" }}>
+      <Box sx={{ flex: 1 }}>
         {playlist.songs && playlist.songs.length > 0 ? (
           playlist.songs.map((song, index) => (
             <Box

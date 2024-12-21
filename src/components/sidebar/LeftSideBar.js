@@ -197,7 +197,7 @@ function LeftSideBar() {
     <Box
       sx={{
         position: "relative",
-        height: "100vh",
+        height: "100%",
         overflow: "hidden",
       }}
       className="left-side-bar"
@@ -213,6 +213,7 @@ function LeftSideBar() {
             transition: "all 0.3s ease",
             border: "none",
             color: "white",
+            maxHeight: "100%",
             borderRadius: "10px",
             position: "relative",
           },

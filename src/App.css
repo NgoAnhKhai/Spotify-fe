@@ -4,46 +4,18 @@
   width: "100%";
   align-items: flex-start;
   background-color: #000;
+  overflow-y: auto;
+}
+.playlist-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  background-color: #000;
   height: 80vh;
   overflow-y: auto;
 }
 .containerProfile {
   background: linear-gradient(to bottom, #1e90ff 15%, #fff);
-}
-
-/*IHPONE 12*/
-/*HomePage*/
-.top-songs-container,
-.feature-section {
-  padding: 16px;
-}
-
-.songs-list,
-.album-cover-image {
-  width: 100%;
-  height: auto;
-  border-radius: 8px;
-}
-
-.song-cover-image {
-  width: 40px;
-  height: 40px;
-  border-radius: 4px;
-  object-fit: cover;
-}
-.pagination-controls {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  gap: 16px;
-  width: 100%;
-  margin-top: 16px;
-}
-.pagination-button {
-  min-width: 100px;
-  border-radius: 8px;
-  text-align: center;
 }
 
 @media (max-width: 600px) {

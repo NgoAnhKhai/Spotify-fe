@@ -13,7 +13,6 @@ function HomePage() {
         sx={{
           backgroundColor: "#121212",
           zIndex: 1,
-          height: "100%",
         }}
       >
         <LeftSideBar />

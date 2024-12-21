@@ -9,7 +9,7 @@ import { ArtistProvider } from "./contexts/adminFindContext/findArtistContext";
 import { GenreProvider } from "./contexts/adminFindContext/findGenreContext";
 import { SongProvider } from "./contexts/adminFindContext/findSongContext";
 import { AlbumProvider } from "./contexts/adminFindContext/findAlbumContext";
-
+import { MusicPlayerProvider } from "./contexts/MusicPlayerContext";
 function App() {
   return (
     <>
@@ -19,13 +19,15 @@ function App() {
             <AlbumProvider>
               <SongProvider>
                 <GenreProvider>
-                  <SearchProvider>
-                    <ThemeProvider>
-                      <AuthProvider>
-                        <Router />
-                      </AuthProvider>
-                    </ThemeProvider>
-                  </SearchProvider>
+                  <MusicPlayerProvider>
+                    <SearchProvider>
+                      <ThemeProvider>
+                        <AuthProvider>
+                          <Router />
+                        </AuthProvider>
+                      </ThemeProvider>
+                    </SearchProvider>
+                  </MusicPlayerProvider>
                 </GenreProvider>
               </SongProvider>
             </AlbumProvider>

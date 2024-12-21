@@ -26,6 +26,9 @@ import {
   fetchRemoveSongToPlaylist,
 } from "../../services/playlistService";
 import ArtistSkeleton from "../../components/skeleton/ArtistSkeleton";
+import { isFollowingArtist } from "../../services/favorites/fetchIsFollowingArtist";
+import { fetchUnfollowingArtists } from "../../services/favorites/unfollowArtists";
+import { fetchFollowingArtist } from "../../services/favorites/followArtists";
 const ArtistDetailPage = () => {
   const { id } = useParams();
   const [artist, setArtist] = useState(null);
@@ -45,6 +48,9 @@ const ArtistDetailPage = () => {
   const [artistDescription, setArtistDescription] = useState([]);
   const songListRef = useRef(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
+
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 600);
@@ -63,13 +69,15 @@ const ArtistDetailPage = () => {
     const loadArtist = async () => {
       try {
         const artistData = await fetchArtistById(id);
-        console.log("data", artistData);
 
         setArtistDescription(artistData.artist.description);
         setArtist(artistData.artist);
-        console.log(artistData.artist._id);
-
         setPlaylist(artistData.artist.songs || []);
+
+        // Kiểm tra trạng thái follow
+        const followingStatus = await isFollowingArtist(artistData.artist._id);
+        setIsFollowing(followingStatus.isFollowing);
+
         setLoading(false);
       } catch (err) {
         setError("Không thể tải nghệ sĩ");
@@ -82,7 +90,6 @@ const ArtistDetailPage = () => {
         const userPlaylists = await fetchPlaylistUser();
         if (userPlaylists && Array.isArray(userPlaylists.playlists)) {
           setPlaylists(userPlaylists.playlists);
-          console.log("userPlaylists.playlists", userPlaylists.playlists);
         } else {
           setPlaylists([]);
         }
@@ -95,6 +102,7 @@ const ArtistDetailPage = () => {
     loadArtist();
     loadUserPlaylists();
   }, [id, setPlaylist]);
+
   if (loading) {
     return <ArtistSkeleton />;
   }
@@ -104,7 +112,7 @@ const ArtistDetailPage = () => {
 
   const handleSongClick = (songID) => {
     const songData = artist.songs.find((song) => song._id === songID);
-    setCurrentSong(songData);
+    setCurrentSong({ ...songData, artist: artist });
     console.log("SongData:", songData);
   };
 
@@ -186,6 +194,40 @@ const ArtistDetailPage = () => {
       handleCloseRemoveModal();
     }
   };
+  const handleFollowClick = async () => {
+    if (followLoading) return;
+
+    setFollowLoading(true);
+
+    try {
+      if (isFollowing) {
+        // Unfollow API
+        await fetchUnfollowingArtists(artist._id);
+        setIsFollowing(false);
+        setArtist((prevArtist) => ({
+          ...prevArtist,
+          followersCount: prevArtist.followersCount - 1,
+        }));
+        setSnackbarMessage("Hủy theo dõi nghệ sĩ thành công!");
+      } else {
+        await fetchFollowingArtist(artist._id);
+        setIsFollowing(true);
+        setArtist((prevArtist) => ({
+          ...prevArtist,
+          followersCount: prevArtist.followersCount + 1,
+        }));
+        setSnackbarMessage("Theo dõi nghệ sĩ thành công!");
+      }
+      setSnackbarSeverity("success");
+    } catch (error) {
+      console.error("Error in follow/unfollow:", error);
+      setSnackbarMessage("Có lỗi xảy ra khi cập nhật trạng thái theo dõi.");
+      setSnackbarSeverity("error");
+    } finally {
+      setFollowLoading(false);
+      setSnackbarOpen(true);
+    }
+  };
 
   const isSongInAnyPlaylist = (songID) => {
     return playlists.some((playlist) =>
@@ -200,12 +242,15 @@ const ArtistDetailPage = () => {
         : [...prev, playlistID]
     );
   };
+
   const handleWheelScroll = (e) => {
     e.currentTarget.scrollTop += e.deltaY * 1.5;
   };
+
   return (
     <Box
       sx={{
+        flex: 1,
         overflowY: "auto",
         padding: 7,
         backgroundColor: theme.palette.background.default,
@@ -215,8 +260,7 @@ const ArtistDetailPage = () => {
             : "linear-gradient(to bottom, #1e90ff 15%, #ffffff)",
         transition: "all 0.3s ease",
         color: theme.palette.text.primary,
-        minHeight: "110vh",
-        height: "100%",
+        maxHeight: "70vh",
         width: isMobile ? "100%" : "100%",
         marginRight: isMobile ? "22%" : "",
         borderRadius: "15px",
@@ -311,6 +355,28 @@ const ArtistDetailPage = () => {
           >
             Followers:{artist.followersCount}
           </Typography>
+          {/* Nút Follow */}
+          <Button
+            onClick={handleFollowClick}
+            disabled={followLoading}
+            sx={{
+              marginTop: "16px",
+              backgroundColor: isFollowing ? "#fff" : "#fff",
+              color: isFollowing ? "#000" : "#000",
+              fontWeight: "bold",
+              border: isFollowing ? "none" : "1px solid #fff",
+              borderRadius: "25px",
+              padding: "8px 16px",
+              textTransform: "none",
+              transition: "all 0.3s ease",
+              "&:hover": {
+                backgroundColor: isFollowing ? "#fff" : "#f0f0f0",
+                transform: "scale(1.05)",
+              },
+            }}
+          >
+            {isFollowing ? "Unfollow" : "Follow"}
+          </Button>
         </Box>
       </Box>
 
@@ -348,7 +414,7 @@ const ArtistDetailPage = () => {
         ref={songListRef}
         sx={{
           flex: 1,
-          overflowY: "auto",
+
           "&::-webkit-scrollbar": { width: "8px" },
           "&::-webkit-scrollbar-thumb": {
             backgroundColor: "#888",
@@ -357,7 +423,7 @@ const ArtistDetailPage = () => {
         }}
         onWheel={handleWheelScroll}
       >
-        <Box sx={{ flex: 1, overflowY: "auto" }}>
+        <Box sx={{ flex: 1 }}>
           {artist.songs && artist.songs.length > 0 ? (
             artist.songs.map((song, index) => {
               const inPlaylist = isSongInAnyPlaylist(song._id);

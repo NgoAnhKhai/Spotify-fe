@@ -19,67 +19,64 @@ const MainLayout = () => {
     }
   }, [user, signout, navigate]);
   return (
-    <MusicPlayerProvider>
-      <div className="Mainlayout">
-        <Box
-          className="MainLayout"
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            height: "100vh",
-            margin: 0,
-            padding: 0,
-            overflow: "hidden",
-          }}
-        >
-          <Grid container direction="column" sx={{ flex: 1 }}>
-            {/* Header */}
-            <Grid
-              item
-              sx={{
-                flexShrink: 0,
-                margin: 0,
-                padding: 0,
-              }}
-            >
-              <MainHeader />
-            </Grid>
-
-            {/* Main Content */}
-            <Grid
-              item
-              sx={{
-                flex: 1,
-                overflow: "auto",
-                margin: 0,
-                padding: 0,
-              }}
-            >
-              <Outlet />
-            </Grid>
-
-            {/* Music Player */}
-            {!isProfilePage && (
-              <Grid
-                item
-                sx={{
-                  margin: 0,
-                  padding: 0,
-                  position: "fixed",
-                  bottom: 0,
-                  left: 0,
-                  height: 200,
-                  right: 0,
-                  zIndex: 999,
-                }}
-              >
-                <MainStartSong />
-              </Grid>
-            )}
+    <div className="Mainlayout">
+      <Box
+        className="MainLayout"
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          maxHeight: "90vh",
+          margin: 0,
+          padding: 0,
+          overflow: "hidden",
+        }}
+      >
+        <Grid container direction="column" sx={{ flex: 1 }}>
+          {/* Header */}
+          <Grid
+            item
+            sx={{
+              flexShrink: 0,
+              margin: 0,
+              padding: 0,
+            }}
+          >
+            <MainHeader />
           </Grid>
-        </Box>
-      </div>
-    </MusicPlayerProvider>
+
+          {/* Main Content */}
+          <Grid
+            item
+            sx={{
+              flex: 1,
+              margin: 0,
+              padding: 0,
+            }}
+          >
+            <Outlet />
+          </Grid>
+
+          {/* Music Player */}
+          {!isProfilePage && (
+            <Grid
+              item
+              sx={{
+                margin: 0,
+                padding: 0,
+                position: "fixed",
+                bottom: 0,
+                left: 0,
+                height: 200,
+                right: 0,
+                zIndex: 999,
+              }}
+            >
+              <MainStartSong />
+            </Grid>
+          )}
+        </Grid>
+      </Box>
+    </div>
   );
 };
 

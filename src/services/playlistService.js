@@ -130,15 +130,43 @@ export const fetchDeletePlaylist = async (playlistId) => {
       throw new Error("Authentication token is missing.");
     }
 
-    const response = await apiService.delete(`/playlists/${playlistId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await apiService.delete(
+      `/playlists/${playlistId}/delete`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
     return response;
   } catch (error) {
     console.error("Error deleting playlist:", error.message);
+    throw error;
+  }
+};
+
+export const updatePlaylistCoverImage = async (playlistId, formData) => {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      throw new Error("Authentication token is missing.");
+    }
+
+    const response = await apiService.put(
+      `/playlists/${playlistId}`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    return response;
+  } catch (error) {
+    console.error("Error updating playlist cover image:", error.message);
     throw error;
   }
 };

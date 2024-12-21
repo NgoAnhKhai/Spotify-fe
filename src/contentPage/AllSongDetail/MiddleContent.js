@@ -39,7 +39,7 @@ export default function MiddleContent() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-  const { setCurrentSong } = useContext(MusicPlayerContext);
+  const { setCurrentSong, setPlaylist } = useContext(MusicPlayerContext);
   const theme = useTheme();
   const { searchResults, searchQuery, updateSearchResults } = useSearch();
 
@@ -47,9 +47,10 @@ export default function MiddleContent() {
     setLoading(true);
     try {
       const result = await fetchGetAllSong(page, songsPerPage);
+      console.log(searchResults);
       setTotalPages(result.totalPages);
       console.log("result.totalPages:", result.pagination.totalPages);
-
+      setPlaylist(result.songs);
       setSongsData(result.songs);
       setLoading(false);
     } catch (err) {
@@ -84,27 +85,31 @@ export default function MiddleContent() {
             setSnackbarSeverity("success");
             setSnackbarOpen(true);
             updateSearchResults(response.songs);
+            setPlaylist(response.songs);
           } else {
             setSnackbarMessage("Không có bài hát nào tìm thấy");
             setSnackbarSeverity("error");
             setSnackbarOpen(true);
             updateSearchResults([]);
+            setPlaylist([]);
           }
         } catch (err) {
           setSnackbarMessage("Có lỗi xảy ra khi tìm kiếm");
           setSnackbarSeverity("error");
           setSnackbarOpen(true);
           updateSearchResults([]);
+          setPlaylist([]);
         }
       };
-
       searchSongs();
+    } else {
+      setPlaylist(songsData);
     }
-  }, [searchQuery, updateSearchResults]);
-
+  }, [searchQuery, songsData]);
   const handleSongClick = (song) => {
     setCurrentSong(song);
   };
+
   const handleAddModalOpen = (event) => {
     event.stopPropagation();
     setOpenAddModal(true);
@@ -172,8 +177,9 @@ export default function MiddleContent() {
   return (
     <Box
       sx={{
-        minHeight: "100vh",
-        height: "calc(100vh - 100px)",
+        flex: 1,
+        overflowY: "auto",
+        maxHeight: "70vh",
         borderRadius: "10px",
         transition: "all 0.3s ease",
         background:
@@ -196,14 +202,28 @@ export default function MiddleContent() {
             }}
           >
             <Typography variant="h5" fontWeight="bold" mb={2}>
-              Top result
+              {searchQuery ? "Search Results" : "All Songs"}
             </Typography>
             <Button
               variant="contained"
               color="primary"
               onClick={() => {
+                setPlaylist(songsData);
+                if (songsData.length > 0) {
+                  setCurrentSong(songsData[0]);
+                }
+              }}
+              sx={{ marginRight: 2 }}
+            >
+              Play All
+            </Button>
+
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => {
                 updateSearchResults([]);
-                loadSongs();
+                setPlaylist(songsData);
               }}
             >
               Refresh
@@ -212,7 +232,6 @@ export default function MiddleContent() {
           <Box
             sx={{
               display: "flex",
-
               backgroundColor:
                 theme.palette.mode === "dark" ? "#121212" : "#e0e0e0",
               borderRadius: "8px",

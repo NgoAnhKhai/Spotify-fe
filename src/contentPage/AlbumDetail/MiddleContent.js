@@ -62,8 +62,9 @@ const MiddleContent = () => {
     const loadAlbum = async () => {
       try {
         const albumData = await fetchAlbumById(id);
+        console.log(albumData);
         setAlbum(albumData);
-        setPlaylist(albumData.listSong);
+        setPlaylist(albumData.songs || []);
         setLoading(false);
       } catch (err) {
         setError("Không thể tải album");
@@ -95,7 +96,7 @@ const MiddleContent = () => {
 
   const handleSongClick = (songID) => {
     const songData = album.listSong.find((song) => song._id === songID);
-    setCurrentSong(songData);
+    setCurrentSong({ ...songData, artist: album.artistID });
     console.log("SongData:", songData);
   };
 
@@ -110,7 +111,6 @@ const MiddleContent = () => {
   };
 
   const handleOpenRemoveModal = (songID) => {
-    // Lọc ra các playlist hiện chứa bài hát này
     const playlistsWithThisSong = playlists.filter((playlist) =>
       playlist.songs?.some((song) => song._id === songID)
     );
@@ -212,8 +212,9 @@ const MiddleContent = () => {
     >
       <Box
         sx={{
-          padding: 7,
+          flex: 1,
           overflowY: "auto",
+          padding: 7,
           backgroundColor: theme.palette.background.default,
           background:
             theme.palette.mode === "dark"
@@ -221,8 +222,7 @@ const MiddleContent = () => {
               : "linear-gradient(to bottom, #1e90ff 15%, #ffffff)",
           transition: "all 0.3s ease",
           color: theme.palette.text.primary,
-          maxHeight: "calc(100vh - 100px)",
-          height: "100%",
+          maxHeight: "70vh",
           width: "100%",
           borderRadius: "15px",
           display: "flex",
