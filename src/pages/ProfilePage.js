@@ -1,3 +1,5 @@
+// src/pages/ProfilePage.js
+
 import React, { useEffect, useState } from "react";
 import {
   Box,
@@ -14,12 +16,14 @@ import {
 import {
   fetchUserProfile,
   updateUserProfile,
-  upgradeSubscription,
   cancelSubscription,
   fetchChangePassword,
 } from "../services/profileService";
+
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useParams } from "react-router-dom";
+import UpgradeAccount from "../invoicesUpgrade/upgradeAccount";
+
 const ProfilePage = () => {
   const [loading, setLoading] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
@@ -45,24 +49,26 @@ const ProfilePage = () => {
   });
   const isMobile = window.innerWidth <= 600;
   const theme = useTheme();
-  useEffect(() => {
-    const loadUserProfile = async () => {
-      setLoading(true);
-      try {
-        const userData = await fetchUserProfile(id);
-        setUserProfile(userData);
-        setUpdatedProfile({
-          username: userData.username,
-          email: userData.email,
-        });
-      } catch (error) {
-        showSnackbar("Không thể tải thông tin người dùng.", "error");
-      } finally {
-        setLoading(false);
-      }
-    };
 
-    loadUserProfile();
+  // Hàm để tải lại thông tin người dùng
+  const reloadUserProfile = async () => {
+    setLoading(true);
+    try {
+      const userData = await fetchUserProfile(id);
+      setUserProfile(userData);
+      setUpdatedProfile({
+        username: userData.username,
+        email: userData.email,
+      });
+    } catch (error) {
+      showSnackbar("Không thể tải thông tin người dùng.", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    reloadUserProfile();
   }, [id]);
 
   const showSnackbar = (message, severity = "success") => {
@@ -81,6 +87,7 @@ const ProfilePage = () => {
     const { name, value } = e.target;
     setUpdatedProfile((prev) => ({ ...prev, [name]: value }));
   };
+
   const handlePasswordInputChange = (e) => {
     const { name, value } = e.target;
     setPasswordData((prev) => {
@@ -96,6 +103,7 @@ const ProfilePage = () => {
       return updatedData;
     });
   };
+
   const handlePasswordVisibilityToggle = (field) => {
     if (field === "oldPassword") {
       setOldPasswordVisible((prev) => !prev);
@@ -105,6 +113,7 @@ const ProfilePage = () => {
       setConfirmPasswordVisible((prev) => !prev);
     }
   };
+
   const handleChangePassword = async () => {
     console.log("Password Data Before Send:", passwordData);
     setLoading(true);
@@ -142,55 +151,19 @@ const ProfilePage = () => {
     }
   };
 
-  const handleUpgradeSubscription = async () => {
-    setLoading(true);
-    try {
-      const userData = await upgradeSubscription(userProfile._id);
-      console.log("Dữ liệu sau khi nâng cấp:", userData);
-
-      if (userData && userData.user) {
-        const {
-          remainingDays,
-          remainingHours,
-          remainingMinutes,
-          remainingSeconds,
-        } = userData.user;
-        setUserProfile((prev) => ({
-          ...prev,
-          subscriptionType: "Premium",
-          remainingDays,
-          remainingHours,
-          remainingMinutes,
-          remainingSeconds,
-        }));
-      } else {
-        const updatedUserData = await fetchUserProfile();
-        console.log("User data sau khi fetch lại:", updatedUserData);
-        setUserProfile(updatedUserData);
-      }
-
-      showSnackbar("Bạn đã nâng cấp tài khoản thành công!");
-    } catch (error) {
-      showSnackbar("Đã xảy ra lỗi khi nâng cấp tài khoản.", "error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCancelSubscription = async () => {
-    setLoading(true);
-    try {
-      await cancelSubscription(userProfile._id);
-      setUserProfile((prev) => ({
-        ...prev,
-        subscriptionType: "Free",
-        remainingDays: null,
-      }));
-      showSnackbar("Bạn đã hủy gói Premium thành công!");
-    } catch (error) {
-      showSnackbar("Đã xảy ra lỗi khi hủy gói Premium.", "error");
-    } finally {
-      setLoading(false);
+  // Hàm callback khi hoàn tất thanh toán thành công
+  const handleUpgradeSuccess = async (updatedUser) => {
+    if (updatedUser) {
+      setUserProfile(updatedUser);
+      setUpdatedProfile({
+        username: updatedUser.username,
+        email: updatedUser.email,
+      });
+      showSnackbar("Bạn đã trở thành Premium!", "success");
+    } else {
+      // Nếu không có dữ liệu người dùng, tái tải hồ sơ
+      await reloadUserProfile();
+      showSnackbar("Bạn đã trở thành Premium!", "success");
     }
   };
 
@@ -216,10 +189,11 @@ const ProfilePage = () => {
       </Typography>
     );
   }
+
   return (
-    <div
+    <Box
       className="containerProfile"
-      style={{
+      sx={{
         overflowY: "auto",
         maxHeight: "90vh",
         width: isMobile ? "80%" : "100%",
@@ -276,7 +250,15 @@ const ProfilePage = () => {
                     </b>
                   </Typography>
                   <Typography sx={{ marginTop: 2 }}>
-                    Sẽ hết hạn trong:{" "}
+                    Sẽ hết hạn vào:{" "}
+                    <b style={{ color: "#1e90ff" }}>
+                      {new Date(
+                        userProfile.premiumExpiryDate
+                      ).toLocaleDateString("vi-VN")}
+                    </b>
+                  </Typography>
+                  <Typography sx={{ marginTop: 2 }}>
+                    Còn lại:{" "}
                     <b style={{ color: "#1e90ff" }}>
                       {userProfile.remainingDays} ngày,{" "}
                       {userProfile.remainingHours} giờ,{" "}
@@ -292,7 +274,25 @@ const ProfilePage = () => {
                       borderColor: "#ff4081",
                       "&:hover": { backgroundColor: "#ff4081", color: "#fff" },
                     }}
-                    onClick={handleCancelSubscription}
+                    onClick={async () => {
+                      // Hàm xử lý hủy gói Premium
+                      setLoading(true);
+                      try {
+                        await cancelSubscription();
+                        await reloadUserProfile(); // Tải lại hồ sơ sau khi hủy
+                        showSnackbar(
+                          "Gói Premium đã được hủy thành công và bạn đã trở về gói Free.",
+                          "success"
+                        );
+                      } catch (error) {
+                        showSnackbar(
+                          "Có lỗi xảy ra khi hủy gói Premium.",
+                          "error"
+                        );
+                      } finally {
+                        setLoading(false);
+                      }
+                    }}
                   >
                     Hủy gói Premium
                   </Button>
@@ -320,13 +320,7 @@ const ProfilePage = () => {
                 {editMode ? "Hủy bỏ chỉnh sửa" : "Chỉnh sửa hồ sơ"}
               </Button>
               {userProfile.subscriptionType !== "Premium" && (
-                <Button
-                  variant="contained"
-                  sx={{ backgroundColor: "#1e90ff", color: "#fff" }}
-                  onClick={handleUpgradeSubscription}
-                >
-                  Nâng cấp tài khoản
-                </Button>
+                <UpgradeAccount onUpgradeSuccess={handleUpgradeSuccess} />
               )}
             </Box>
           </Grid>
@@ -531,6 +525,7 @@ const ProfilePage = () => {
           open={snackbar.open}
           autoHideDuration={6000}
           onClose={handleCloseSnackbar}
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
         >
           <Alert
             onClose={handleCloseSnackbar}
@@ -541,7 +536,7 @@ const ProfilePage = () => {
           </Alert>
         </Snackbar>
       </Box>
-    </div>
+    </Box>
   );
 };
 

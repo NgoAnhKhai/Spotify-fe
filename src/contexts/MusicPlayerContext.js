@@ -12,7 +12,6 @@ export const MusicPlayerProvider = ({ children }) => {
       playlist.length > 0 &&
       !playlist.some((song) => song._id === currentSong?._id)
     ) {
-      setCurrentSong(playlist[0]);
     }
   }, [playlist, currentSong]);
 

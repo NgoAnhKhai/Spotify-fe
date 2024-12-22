@@ -25,7 +25,7 @@ const MainLayout = () => {
         sx={{
           display: "flex",
           flexDirection: "column",
-          maxHeight: "90vh",
+          maxHeight: "100vh",
           margin: 0,
           padding: 0,
           overflow: "hidden",
