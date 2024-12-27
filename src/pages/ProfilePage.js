@@ -1,6 +1,4 @@
-// src/pages/ProfilePage.js
-
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   Box,
   Typography,
@@ -23,6 +21,8 @@ import {
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useParams } from "react-router-dom";
 import UpgradeAccount from "../invoicesUpgrade/upgradeAccount";
+import MainStartSong from "../layout/MainStartSong";
+import { MusicPlayerContext } from "../contexts/MusicPlayerContext";
 
 const ProfilePage = () => {
   const [loading, setLoading] = useState(false);
@@ -33,6 +33,8 @@ const ProfilePage = () => {
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
   const [passwordMismatchError, setPasswordMismatchError] = useState(false);
   const { id } = useParams();
+  const { updateSubscriptionType, resetPlayer } =
+    useContext(MusicPlayerContext);
   const [updatedProfile, setUpdatedProfile] = useState({
     username: "",
     email: "",
@@ -50,7 +52,6 @@ const ProfilePage = () => {
   const isMobile = window.innerWidth <= 600;
   const theme = useTheme();
 
-  // Hàm để tải lại thông tin người dùng
   const reloadUserProfile = async () => {
     setLoading(true);
     try {
@@ -151,22 +152,39 @@ const ProfilePage = () => {
     }
   };
 
-  // Hàm callback khi hoàn tất thanh toán thành công
-  const handleUpgradeSuccess = async (updatedUser) => {
-    if (updatedUser) {
-      setUserProfile(updatedUser);
-      setUpdatedProfile({
-        username: updatedUser.username,
-        email: updatedUser.email,
-      });
-      showSnackbar("Bạn đã trở thành Premium!", "success");
-    } else {
-      // Nếu không có dữ liệu người dùng, tái tải hồ sơ
-      await reloadUserProfile();
-      showSnackbar("Bạn đã trở thành Premium!", "success");
+  const handleUpgradeSuccess = async (action, updatedUser) => {
+    if (action === "upgrade" || action === "cancel") {
+      if (updatedUser) {
+        setUserProfile((prev) => ({
+          ...prev,
+          ...updatedUser,
+        }));
+      }
+      const message =
+        action === "upgrade"
+          ? "Bạn đã trở thành Premium!"
+          : "Hủy hóa đơn thành công và trở lại gói Free.";
+      showSnackbar(message, "success");
     }
   };
 
+  const handleCancelPremium = async () => {
+    setLoading(true);
+    try {
+      await cancelSubscription();
+      updateSubscriptionType("Free");
+      resetPlayer();
+      await reloadUserProfile();
+      showSnackbar(
+        "Gói Premium đã được hủy thành công và bạn đã trở về gói Free.",
+        "success"
+      );
+    } catch (error) {
+      showSnackbar("Có lỗi xảy ra khi hủy gói Premium.", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
   if (loading) {
     return (
       <Box
@@ -195,7 +213,7 @@ const ProfilePage = () => {
       className="containerProfile"
       sx={{
         overflowY: "auto",
-        maxHeight: "90vh",
+        maxHeight: "70vh",
         width: isMobile ? "80%" : "100%",
       }}
     >
@@ -244,55 +262,28 @@ const ProfilePage = () => {
                   <Typography sx={{ marginTop: 2 }}>
                     Bạn đã mua gói vào ngày:{" "}
                     <b style={{ color: "#1e90ff" }}>
-                      {new Date(userProfile.createdAt).toLocaleDateString(
-                        "vi-VN"
-                      )}
+                      {userProfile.paymentDate
+                        ? new Date(userProfile.paymentDate).toLocaleDateString(
+                            "vi-VN"
+                          )
+                        : "Chưa thanh toán"}
                     </b>
                   </Typography>
                   <Typography sx={{ marginTop: 2 }}>
                     Sẽ hết hạn vào:{" "}
                     <b style={{ color: "#1e90ff" }}>
-                      {new Date(
-                        userProfile.premiumExpiryDate
-                      ).toLocaleDateString("vi-VN")}
+                      {userProfile.premiumExpiryDate
+                        ? new Date(
+                            userProfile.premiumExpiryDate
+                          ).toLocaleDateString("vi-VN")
+                        : "Không có ngày hết hạn"}
                     </b>
                   </Typography>
-                  <Typography sx={{ marginTop: 2 }}>
-                    Còn lại:{" "}
-                    <b style={{ color: "#1e90ff" }}>
-                      {userProfile.remainingDays} ngày,{" "}
-                      {userProfile.remainingHours} giờ,{" "}
-                      {userProfile.remainingMinutes} phút,{" "}
-                      {userProfile.remainingSeconds} giây
-                    </b>
-                  </Typography>
+
                   <Button
                     variant="outlined"
-                    sx={{
-                      marginTop: 2,
-                      color: "#fff",
-                      borderColor: "#ff4081",
-                      "&:hover": { backgroundColor: "#ff4081", color: "#fff" },
-                    }}
-                    onClick={async () => {
-                      // Hàm xử lý hủy gói Premium
-                      setLoading(true);
-                      try {
-                        await cancelSubscription();
-                        await reloadUserProfile(); // Tải lại hồ sơ sau khi hủy
-                        showSnackbar(
-                          "Gói Premium đã được hủy thành công và bạn đã trở về gói Free.",
-                          "success"
-                        );
-                      } catch (error) {
-                        showSnackbar(
-                          "Có lỗi xảy ra khi hủy gói Premium.",
-                          "error"
-                        );
-                      } finally {
-                        setLoading(false);
-                      }
-                    }}
+                    sx={{ marginTop: 2, color: "#fff", borderColor: "#ff4081" }}
+                    onClick={handleCancelPremium}
                   >
                     Hủy gói Premium
                   </Button>
@@ -405,11 +396,11 @@ const ProfilePage = () => {
                 backgroundColor:
                   theme.palette.mode === "dark" ? "#121212" : "#ffffff",
                 marginBottom: "16px",
-                input: { color: theme.palette.text.primary }, // Màu chữ của input
-                "& .MuiInputLabel-root": { color: theme.palette.text.primary }, // Màu chữ của label
+                input: { color: theme.palette.text.primary },
+                "& .MuiInputLabel-root": { color: theme.palette.text.primary },
                 "& .MuiOutlinedInput-root": {
                   "& fieldset": {
-                    borderColor: theme.palette.text.primary, // Màu viền cho chế độ sáng/tối
+                    borderColor: theme.palette.text.primary,
                   },
                 },
               }}
@@ -421,7 +412,7 @@ const ProfilePage = () => {
                 top: "50%",
                 right: "8px",
                 transform: "translateY(-50%)",
-                color: theme.palette.text.primary, // Màu của icon
+                color: theme.palette.text.primary,
               }}
             >
               {oldPasswordVisible ? <VisibilityOff /> : <Visibility />}
@@ -536,6 +527,7 @@ const ProfilePage = () => {
           </Alert>
         </Snackbar>
       </Box>
+      <MainStartSong />
     </Box>
   );
 };

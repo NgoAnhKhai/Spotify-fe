@@ -5,7 +5,7 @@ export const fetchDeleteAlbum = async (albumId) => {
     const token = localStorage.getItem("token");
     if (!token) throw new Error("Token không tồn tại.");
 
-    const response = await apiService.delete(`/albums/${albumId}`, {
+    const response = await apiService.delete(`/admin/albums/${albumId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

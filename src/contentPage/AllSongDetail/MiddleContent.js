@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-
+import React, { useEffect, useState, useContext } from "react";
 import {
   Box,
   Typography,
@@ -13,10 +12,11 @@ import {
   List,
   Modal,
   Pagination,
+  useMediaQuery,
 } from "@mui/material";
+import RefreshIcon from "@mui/icons-material/Refresh";
 import AddIcon from "@mui/icons-material/Add";
 import { fetchGetAllSong, fetchSearchSong } from "../../services/songService";
-import { useContext } from "react";
 import { MusicPlayerContext } from "../../contexts/MusicPlayerContext";
 import { useSearch } from "../../contexts/SearchContext";
 import {
@@ -31,7 +31,7 @@ export default function MiddleContent() {
   const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [songsPerPage] = useState(10);
+  // Bỏ state songsPerPage
   const [playlists, setPlaylists] = useState([]);
   const [openAddModal, setOpenAddModal] = useState(false);
   const [selectedSongID, setSelectedSongID] = useState(null);
@@ -42,22 +42,24 @@ export default function MiddleContent() {
   const { setCurrentSong, setPlaylist } = useContext(MusicPlayerContext);
   const theme = useTheme();
   const { searchResults, searchQuery, updateSearchResults } = useSearch();
+  const isMobile = useMediaQuery("(max-width:600px)");
 
+  // Hàm để tải bài hát
   const loadSongs = async (page = 1) => {
     setLoading(true);
     try {
-      const result = await fetchGetAllSong(page, songsPerPage);
-      console.log(searchResults);
-      setTotalPages(result.totalPages);
-      console.log("result.totalPages:", result.pagination.totalPages);
-      setPlaylist(result.songs);
+      const result = await fetchGetAllSong(page, 5, "popularity", "desc");
+      setTotalPages(result.pagination.totalPages);
       setSongsData(result.songs);
+      setPlaylist(result.songs);
       setLoading(false);
     } catch (err) {
-      setError("Failed to load songs");
+      setError(err.message || "Failed to load songs");
       setLoading(false);
     }
   };
+
+  // Hàm để tải playlist của người dùng
   const loadUserPlaylists = async () => {
     try {
       const userPlaylists = await fetchPlaylistUser();
@@ -70,14 +72,16 @@ export default function MiddleContent() {
   };
 
   useEffect(() => {
-    loadSongs();
+    loadSongs(currentPage);
     loadUserPlaylists();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [currentPage]);
 
+  // Tải kết quả tìm kiếm khi có query
   useEffect(() => {
     if (searchQuery) {
       const searchSongs = async () => {
+        setLoading(true);
         try {
           const response = await fetchSearchSong(searchQuery);
           if (response && response.songs && response.songs.length > 0) {
@@ -94,26 +98,32 @@ export default function MiddleContent() {
             setPlaylist([]);
           }
         } catch (err) {
-          setSnackbarMessage("Có lỗi xảy ra khi tìm kiếm");
+          setSnackbarMessage("Không có bài hát nào tìm thấy");
           setSnackbarSeverity("error");
           setSnackbarOpen(true);
           updateSearchResults([]);
           setPlaylist([]);
+        } finally {
+          setLoading(false);
         }
       };
       searchSongs();
     } else {
       setPlaylist(songsData);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery, songsData]);
+
   const handleSongClick = (song) => {
     setCurrentSong(song);
   };
 
-  const handleAddModalOpen = (event) => {
+  const handleAddModalOpen = (event, songID) => {
     event.stopPropagation();
+    setSelectedSongID(songID);
     setOpenAddModal(true);
   };
+
   const handleAddToPlaylist = async () => {
     try {
       if (selectedPlaylists.length > 0 && selectedSongID) {
@@ -143,16 +153,13 @@ export default function MiddleContent() {
     );
   };
 
-  const topResult = searchResults.length > 0 ? searchResults[0] : songsData[0];
   const listSongs =
-    searchResults.length > 0 ? searchResults.slice(1) : songsData;
+    searchQuery && searchResults.length > 0 ? searchResults : songsData;
 
-  // Khi đang tải dữ liệu
   if (loading) {
     return <SkeletonLoaderSong />;
   }
 
-  // Khi có lỗi
   if (error) {
     return (
       <Box
@@ -181,57 +188,90 @@ export default function MiddleContent() {
         overflowY: "auto",
         maxHeight: "70vh",
         borderRadius: "10px",
+        width: isMobile ? "90%" : "100%",
+        marginLeft: isMobile ? "auto" : "0",
+        margin: isMobile ? "0 auto" : "0",
         transition: "all 0.3s ease",
         background:
           theme.palette.mode === "dark"
             ? "linear-gradient(to bottom, #1e90ff 15%, #000000)"
             : "linear-gradient(to bottom, #1e90ff 15%, #ffffff)",
-        width: "100%",
         color: theme.palette.text.primary,
-        p: 4,
+        p: isMobile ? 2 : 4,
       }}
     >
       {/* Top result with Refresh button */}
-      {topResult && (
+      {listSongs.length > 0 && (
         <>
           <Box
             sx={{
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
+              gap: isMobile ? 1 : 2,
+              mb: 2,
             }}
           >
-            <Typography variant="h5" fontWeight="bold" mb={2}>
+            <Typography
+              sx={{ marginLeft: isMobile ? "-10px" : "0px" }}
+              variant="h5"
+              fontWeight="bold"
+              mb={2}
+            >
               {searchQuery ? "Search Results" : "All Songs"}
             </Typography>
+          </Box>
+          <Box
+            sx={{
+              display: "flex",
+              marginLeft: isMobile ? "100px" : "0",
+              flexDirection: isMobile ? "column" : "row",
+              justifyContent: "flex-end",
+              gap: 2,
+              mb: 2,
+            }}
+          >
             <Button
               variant="contained"
               color="primary"
               onClick={() => {
-                setPlaylist(songsData);
-                if (songsData.length > 0) {
-                  setCurrentSong(songsData[0]);
+                setPlaylist(listSongs);
+                if (listSongs.length > 0) {
+                  setCurrentSong(listSongs[0]);
                 }
               }}
-              sx={{ marginRight: 2 }}
+              sx={{
+                width: isMobile ? "50%!important" : "auto",
+                marginRight: 2,
+                margin: "10px",
+                padding: "5px 10px",
+              }}
             >
               Play All
             </Button>
 
             <Button
-              variant="contained"
-              color="primary"
+              sx={{
+                marginRight: 2,
+                marginLeft: isMobile ? "-50" : "auto",
+
+                padding: "5px 10px",
+              }}
               onClick={() => {
                 updateSearchResults([]);
                 setPlaylist(songsData);
               }}
             >
-              Refresh
+              <RefreshIcon />
             </Button>
           </Box>
           <Box
             sx={{
               display: "flex",
+              flexDirection: isMobile ? "column" : "row",
+              width: isMobile ? "70%" : "100%",
+              marginLeft: isMobile ? "30px" : "auto",
+
               backgroundColor:
                 theme.palette.mode === "dark" ? "#121212" : "#e0e0e0",
               borderRadius: "8px",
@@ -240,26 +280,30 @@ export default function MiddleContent() {
               mb: 4,
               cursor: "pointer",
             }}
-            onClick={() => handleSongClick(topResult)}
+            onClick={() => handleSongClick(listSongs[0])}
           >
             <Box
               component="img"
-              src={topResult.coverImageURL}
-              alt={topResult.title}
+              src={listSongs[0].coverImageURL}
+              alt={listSongs[0].title}
               sx={{
-                width: "150px",
-                height: "150px",
+                width: isMobile ? "100%" : "150px",
+                height: isMobile ? "auto" : "150px",
                 borderRadius: "8px",
-                mr: 2,
+                mr: isMobile ? 0 : 2,
+                mb: isMobile ? 2 : 0,
                 objectFit: "cover",
               }}
             />
             <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
               <Typography variant="h4" fontWeight="bold">
-                {topResult.title}
+                {listSongs[0].title}
               </Typography>
               <Typography variant="body2" sx={{ color: "grey" }}>
-                Song • {topResult.artistID?.name}
+                Song • {listSongs[0].artistID?.name}
+              </Typography>
+              <Typography variant="body2" sx={{ color: "grey" }}>
+                Popularity: {listSongs[0].popularity}
               </Typography>
             </Box>
           </Box>
@@ -279,7 +323,7 @@ export default function MiddleContent() {
           gap: 2,
         }}
       >
-        {listSongs.map((song) => (
+        {listSongs.slice(1).map((song) => (
           <Box
             key={song._id}
             sx={{
@@ -287,6 +331,8 @@ export default function MiddleContent() {
               alignItems: "center",
               padding: "8px",
               borderRadius: "8px",
+              width: isMobile ? "70%" : "100%",
+              marginLeft: isMobile ? "30px" : "auto",
               transition: "0.3s",
               backgroundColor:
                 theme.palette.mode === "dark" ? "#121212" : "#e0e0e0",
@@ -317,6 +363,9 @@ export default function MiddleContent() {
               <Typography variant="body2" sx={{ color: "grey" }}>
                 {song.artistID?.name || "Unknown Artist"}
               </Typography>
+              <Typography variant="body2" sx={{ color: "grey" }}>
+                Popularity: {song.popularity}
+              </Typography>
             </Box>
             {/* Add to Playlist Icon */}
             <AddIcon
@@ -326,14 +375,28 @@ export default function MiddleContent() {
                 fontSize: "30px",
                 color: theme.palette.primary.main,
               }}
-              onClick={(event) => {
-                handleAddModalOpen(event);
-                setSelectedSongID(song._id);
-                setOpenAddModal(true);
-              }}
+              onClick={(event) => handleAddModalOpen(event, song._id)}
             />
           </Box>
         ))}
+      </Box>
+
+      {/* Pagination */}
+      <Box
+        sx={{
+          display: "flex",
+          width: isMobile ? "70%" : "100%",
+          marginLeft: isMobile ? "30px" : "auto",
+          justifyContent: "center",
+          marginTop: 4,
+        }}
+      >
+        <Pagination
+          count={totalPages}
+          page={currentPage}
+          onChange={(event, value) => setCurrentPage(value)}
+          color="primary"
+        />
       </Box>
 
       {/* Add to Playlist Modal */}
@@ -407,20 +470,13 @@ export default function MiddleContent() {
           </Button>
         </Box>
       </Modal>
-      <Box sx={{ display: "flex", justifyContent: "center", marginTop: 4 }}>
-        <Pagination
-          count={totalPages}
-          page={currentPage}
-          onChange={(event, value) => setCurrentPage(value)}
-          color="primary"
-        />
-      </Box>
 
       {/* Snackbar */}
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}
         onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
         <Alert
           onClose={() => setSnackbarOpen(false)}

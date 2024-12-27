@@ -1,6 +1,4 @@
-// src/components/UpgradeAccount.js
-
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   Button,
   CircularProgress,
@@ -19,14 +17,17 @@ import {
   cancelPayment,
   completePayment,
   createInvoice,
-  getPendingInvoice, // Nếu bạn đã thêm hàm này
+  getPendingInvoice,
 } from "../services/invoicesServices";
+import { MusicPlayerContext } from "../contexts/MusicPlayerContext";
 
 const UpgradeAccount = ({ onUpgradeSuccess }) => {
   const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
   const [openPaymentForm, setOpenPaymentForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [invoice, setInvoice] = useState(null);
+  const { updateSubscriptionType, setCurrentSong, setPlaylist, resetPlayer } =
+    useContext(MusicPlayerContext);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -38,14 +39,15 @@ const UpgradeAccount = ({ onUpgradeSuccess }) => {
     cvv: "",
   });
 
-  // useEffect để tải hóa đơn Pending khi component mount
   useEffect(() => {
     const fetchPendingInvoice = async () => {
       setLoading(true);
       try {
-        const pendingInvoice = await getPendingInvoice();
-        if (pendingInvoice) {
-          setInvoice(pendingInvoice);
+        const response = await getPendingInvoice();
+        console.log("pendingInvoice:", response);
+
+        if (response && response.invoice) {
+          setInvoice(response.invoice);
           setSnackbar({
             open: true,
             message:
@@ -54,7 +56,6 @@ const UpgradeAccount = ({ onUpgradeSuccess }) => {
           });
         }
       } catch (error) {
-        // Không cần thông báo nếu không có hóa đơn Pending
         console.error("Không tìm thấy hóa đơn Pending:", error.message);
       } finally {
         setLoading(false);
@@ -74,12 +75,6 @@ const UpgradeAccount = ({ onUpgradeSuccess }) => {
     setOpenConfirmDialog(false);
   };
 
-  // Mở form thanh toán
-  const handleOpenPaymentForm = () => {
-    setOpenConfirmDialog(false);
-    setOpenPaymentForm(true);
-  };
-
   // Đóng form thanh toán
   const handleClosePaymentForm = () => {
     setOpenPaymentForm(false);
@@ -91,8 +86,7 @@ const UpgradeAccount = ({ onUpgradeSuccess }) => {
     setPaymentDetails((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Xử lý khi người dùng nhấn "Tiếp tục thanh toán"
-  const handleProceedToPayment = async () => {
+  const handleContinue = async () => {
     setLoading(true);
     try {
       const data = await createInvoice();
@@ -102,7 +96,7 @@ const UpgradeAccount = ({ onUpgradeSuccess }) => {
         message: "Hóa đơn đã được tạo thành công. Trạng thái: Pending.",
         severity: "success",
       });
-      setOpenPaymentForm(false);
+      setOpenConfirmDialog(false);
     } catch (error) {
       setSnackbar({
         open: true,
@@ -114,9 +108,14 @@ const UpgradeAccount = ({ onUpgradeSuccess }) => {
     }
   };
 
-  // Xử lý khi người dùng hoàn tất thanh toán
+  // Xử lý khi người dùng nhấn "Thanh Toán"
+  const handleProceedToPayment = () => {
+    setOpenPaymentForm(true);
+  };
+
+  // Xử lý khi người dùng nhấn "Hoàn tất thanh toán" trong form thanh toán
   const handleCompletePayment = async () => {
-    if (!invoice || invoice.status !== "Pending") {
+    if (!invoice || invoice.paymentStatus !== "Pending") {
       setSnackbar({
         open: true,
         message: "Không có hóa đơn nào để hoàn tất thanh toán.",
@@ -128,16 +127,23 @@ const UpgradeAccount = ({ onUpgradeSuccess }) => {
     setLoading(true);
     try {
       const data = await completePayment(invoice._id);
-      setInvoice(null); // Sau khi thanh toán thành công, loại bỏ hóa đơn Pending
+      setInvoice(null);
       setSnackbar({
         open: true,
         message:
           "Thanh toán đã được hoàn tất thành công. Bạn đã trở thành Premium!",
         severity: "success",
       });
+      setOpenPaymentForm(false);
       if (onUpgradeSuccess) {
-        onUpgradeSuccess(data.user); // Gửi dữ liệu người dùng cập nhật
+        onUpgradeSuccess("upgrade", data.user);
       }
+      if (data?.user?.subscriptionType) {
+        updateSubscriptionType(data.user.subscriptionType);
+      }
+      setCurrentSong(null);
+      setPlaylist([]);
+      resetPlayer();
     } catch (error) {
       setSnackbar({
         open: true,
@@ -149,9 +155,9 @@ const UpgradeAccount = ({ onUpgradeSuccess }) => {
     }
   };
 
-  // Xử lý khi người dùng hủy bỏ thanh toán
+  // Xử lý khi người dùng nhấn "Hủy Hóa Đơn"
   const handleCancelPayment = async () => {
-    if (!invoice || invoice.status !== "Pending") {
+    if (!invoice || invoice.paymentStatus !== "Pending") {
       setSnackbar({
         open: true,
         message: "Không có hóa đơn nào để hủy bỏ.",
@@ -163,16 +169,18 @@ const UpgradeAccount = ({ onUpgradeSuccess }) => {
     setLoading(true);
     try {
       await cancelPayment(invoice._id);
+
       setInvoice(null);
       setSnackbar({
         open: true,
-        message: "Hủy bỏ thanh toán thành công. Bạn đã trở về trạng thái Free.",
+        message: "Hủy hóa đơn thành công.",
         severity: "success",
       });
-      // Sau khi hủy bỏ, gọi callback để cập nhật lại thông tin người dùng
+
       if (onUpgradeSuccess) {
-        onUpgradeSuccess(); // Có thể tái tải hồ sơ nếu cần
+        onUpgradeSuccess("cancel");
       }
+      resetPlayer();
     } catch (error) {
       setSnackbar({
         open: true,
@@ -224,13 +232,67 @@ const UpgradeAccount = ({ onUpgradeSuccess }) => {
           <Button onClick={handleCloseConfirmDialog} color="primary">
             Hủy
           </Button>
-          <Button onClick={handleOpenPaymentForm} color="primary" autoFocus>
+          <Button onClick={handleContinue} color="primary" autoFocus>
             Tiếp tục
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Form thanh toán */}
+      {/* Nếu có hóa đơn Pending, hiển thị thông tin và các nút hành động */}
+      {invoice && (
+        <Box
+          sx={{
+            marginTop: 2,
+            padding: 2,
+            backgroundColor: "#1e1e1e",
+            borderRadius: "8px",
+          }}
+        >
+          <Typography variant="h6" sx={{ color: "#fff" }}>
+            Thông tin Hóa đơn
+          </Typography>
+          <Typography variant="body1" sx={{ color: "#fff" }}>
+            ID Hóa đơn: {invoice._id}
+          </Typography>
+          <Typography variant="body1" sx={{ color: "#fff" }}>
+            Trạng thái: {invoice.paymentStatus}
+          </Typography>
+          <Box sx={{ marginTop: 2 }}>
+            <Typography variant="body2" sx={{ color: "#fff" }}>
+              Bạn đã có một hóa đơn chưa thanh toán. Vui lòng hoàn tất hoặc hủy
+              bỏ.
+            </Typography>
+            <Box sx={{ display: "flex", gap: 2, marginTop: 1 }}>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={handleProceedToPayment}
+                disabled={loading}
+              >
+                {loading ? (
+                  <CircularProgress size={24} color="inherit" />
+                ) : (
+                  "Thanh Toán"
+                )}
+              </Button>
+              <Button
+                variant="outlined"
+                color="error"
+                onClick={handleCancelPayment}
+                disabled={loading}
+              >
+                {loading ? (
+                  <CircularProgress size={24} color="inherit" />
+                ) : (
+                  "Hủy Hóa Đơn"
+                )}
+              </Button>
+            </Box>
+          </Box>
+        </Box>
+      )}
+
+      {/* Form thanh toán - chỉ hiển thị khi người dùng nhấn "Thanh Toán" */}
       <Dialog
         open={openPaymentForm}
         onClose={handleClosePaymentForm}
@@ -279,64 +341,11 @@ const UpgradeAccount = ({ onUpgradeSuccess }) => {
           <Button onClick={handleClosePaymentForm} color="primary">
             Hủy
           </Button>
-          <Button onClick={handleProceedToPayment} color="primary" autoFocus>
-            Tiếp tục thanh toán
+          <Button onClick={handleCompletePayment} color="primary" autoFocus>
+            Hoàn tất thanh toán
           </Button>
         </DialogActions>
       </Dialog>
-
-      {/* Nếu có hóa đơn Pending, hiển thị thông tin và các nút hành động */}
-      {invoice && (
-        <Box
-          sx={{
-            marginTop: 2,
-            padding: 2,
-            backgroundColor: "#1e1e1e",
-            borderRadius: "8px",
-          }}
-        >
-          <Typography variant="h6" sx={{ color: "#fff" }}>
-            Thông tin Hóa đơn
-          </Typography>
-          <Typography variant="body1" sx={{ color: "#fff" }}>
-            ID Hóa đơn: {invoice._id}
-          </Typography>
-          <Typography variant="body1" sx={{ color: "#fff" }}>
-            Trạng thái: {invoice.status}
-          </Typography>
-          <Box sx={{ marginTop: 2 }}>
-            <Typography variant="body2" sx={{ color: "#fff" }}>
-              Vui lòng hoàn tất thanh toán để trở thành Premium.
-            </Typography>
-            <Box sx={{ display: "flex", gap: 2, marginTop: 1 }}>
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={handleCompletePayment}
-                disabled={loading}
-              >
-                {loading ? (
-                  <CircularProgress size={24} color="inherit" />
-                ) : (
-                  "Hoàn tất thanh toán"
-                )}
-              </Button>
-              <Button
-                variant="outlined"
-                color="error"
-                onClick={handleCancelPayment}
-                disabled={loading}
-              >
-                {loading ? (
-                  <CircularProgress size={24} color="inherit" />
-                ) : (
-                  "Hủy Hóa Đơn"
-                )}
-              </Button>
-            </Box>
-          </Box>
-        </Box>
-      )}
 
       {/* Snackbar để thông báo */}
       <Snackbar

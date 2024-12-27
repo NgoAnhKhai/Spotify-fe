@@ -1,9 +1,14 @@
 import apiService from "../api/apiService";
 
-export async function fetchGetAllSong(page = 1, limit = 5) {
+export async function fetchGetAllSong(
+  page = 1,
+  limit = 5,
+  sortBy = "popularity",
+  order = "asc"
+) {
   try {
     const response = await apiService.get("/songs", {
-      params: { page, limit },
+      params: { page, limit, sortBy, order },
     });
     return response;
   } catch (error) {

@@ -3,7 +3,10 @@ import apiService from "../../api/apiService";
 export const fetchAllFavoriteArtists = async (page = 1, limit = 4) => {
   try {
     const response = await apiService.get(
-      `/users/favorite-artists?page=${page}&limit=${limit}`
+      `/users/favorite-artists?page=${page}&limit=${limit}`,
+      {
+        params: { page, limit },
+      }
     );
     return response;
   } catch (error) {

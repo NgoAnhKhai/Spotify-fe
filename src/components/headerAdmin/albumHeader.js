@@ -24,7 +24,6 @@ import { useAuth } from "../../contexts/AuthContext";
 import { AlbumContext } from "../../contexts/adminFindContext/findAlbumContext";
 import { fetchFindAlbumByTitle } from "../../services/adminServices.js/AlbumsAdminServices.js/fetchFindAlbum";
 
-// Styled components
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
   borderRadius: "20px",

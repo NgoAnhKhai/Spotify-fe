@@ -1,6 +1,5 @@
 import apiService from "../../../api/apiService";
 
-// Hàm phân quyền người dùng
 const fetchAssignRole = async (userId, newRole, artistDetails) => {
   try {
     const payload = { userId, newRole };

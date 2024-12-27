@@ -30,15 +30,15 @@ import { fetchArtistById } from "../../services/artistService";
 import ArtistInfo from "../../info/ArtistInfo";
 
 function RightSideBar() {
+  const isMobile = useMediaQuery("(max-width:600px)");
   const [drawerWidth, setDrawerWidth] = useState(240);
   const [isResizing, setIsResizing] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [album, setAlbum] = useState(null); // Khởi tạo với null để dễ kiểm tra
+  const [album, setAlbum] = useState(null);
   const [open, setOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(true);
   const { currentSong, setCurrentSong } = useContext(MusicPlayerContext);
   const [loading, setLoading] = useState(true);
-  const isMobile = useMediaQuery("(max-width:600px)");
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -46,11 +46,9 @@ function RightSideBar() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-  // Thêm state cho nghệ sĩ
   const [artist, setArtist] = useState(null);
   const [artistLoading, setArtistLoading] = useState(false);
   const [artistError, setArtistError] = useState(null);
-  // Xác định loại trang hiện tại
   const matchArtist = useMatch("/artist/:id");
   const matchAlbum = useMatch("/album/:id");
 
@@ -230,7 +228,9 @@ function RightSideBar() {
   const navigateLogin = () => {
     navigate("/login");
   };
-
+  if (isMobile) {
+    return null;
+  }
   return (
     <Box
       sx={{

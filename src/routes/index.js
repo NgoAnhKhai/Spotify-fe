@@ -10,16 +10,14 @@ import AlbumPage from "../pages/AlbumPage";
 import ProtectedRoute from "../contexts/ProtectedRoute";
 import ProfilePage from "../pages/ProfilePage";
 import PlaylistPage from "../pages/PlaylistPage";
-import DashboardPage from "../pages/admin/Users/DashboardPage";
+
 import ProtectedAdminRoute from "../contexts/adminProtected/ProtectedAdminRoute";
 import ArtistPage from "../pages/ArtistPage";
 
 import AllSongsPage from "../pages/AllSongsPage";
-import DashboardArtistPage from "../pages/admin/Artists/DashboardArtistPage";
-import DashboardGenresPage from "../pages/admin/Genres/DashboardGenresPage";
-import DashboardSongsPage from "../pages/admin/Songs/DashboardSongsPage";
-import DashboardAlbumsPage from "../pages/admin/albums/DashboardAlbumsPage";
+
 import FavoritesPage from "../pages/FavoritesPage";
+import AdminPage from "../pages/admin/DashboardPage";
 
 function Router() {
   return (
@@ -28,42 +26,10 @@ function Router() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route
-          path="/admin/dashboard/users"
+          path="/admin/dashboard"
           element={
             <ProtectedAdminRoute>
-              <DashboardPage />
-            </ProtectedAdminRoute>
-          }
-        ></Route>
-        <Route
-          path="/admin/dashboard/artists"
-          element={
-            <ProtectedAdminRoute>
-              <DashboardArtistPage />
-            </ProtectedAdminRoute>
-          }
-        ></Route>
-        <Route
-          path="/admin/dashboard/genres"
-          element={
-            <ProtectedAdminRoute>
-              <DashboardGenresPage />
-            </ProtectedAdminRoute>
-          }
-        ></Route>
-        <Route
-          path="/admin/dashboard/songs"
-          element={
-            <ProtectedAdminRoute>
-              <DashboardSongsPage />
-            </ProtectedAdminRoute>
-          }
-        ></Route>
-        <Route
-          path="/admin/dashboard/albums"
-          element={
-            <ProtectedAdminRoute>
-              <DashboardAlbumsPage />
+              <AdminPage />
             </ProtectedAdminRoute>
           }
         ></Route>

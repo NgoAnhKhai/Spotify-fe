@@ -1,5 +1,0 @@
-- next song theo searching
-- admin fix UI toàn diện
-- thêm chức năng tạo artist, album, song, genres
-- nếu từ user lên artist thì sẽ tạo form để sửa tên artist
-- Invoices

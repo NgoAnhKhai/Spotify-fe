@@ -6,7 +6,7 @@ import MiddleContent from "../contentPage/AlbumDetail/MiddleContent";
 const AlbumPage = () => {
   return (
     <>
-      <div className="homepage-container">
+      <div className="album-container">
         <LeftSideBar />
         <MiddleContent />
         <RightSideBar />

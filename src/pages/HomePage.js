@@ -11,8 +11,7 @@ function HomePage() {
       <Grid
         item
         sx={{
-          backgroundColor: "#121212",
-          zIndex: 1,
+          zIndex: 9999,
         }}
       >
         <LeftSideBar />

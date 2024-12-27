@@ -6,6 +6,6 @@ export const fetchDeleteArtist = async (artistId) => {
     return response;
   } catch (error) {
     console.error("Error deleting artist:", error);
-    throw new Error(error.response?.data?.message || "Error deleting artist");
+    throw new Error(error.response?.message || "Error deleting artist");
   }
 };

@@ -1,6 +1,6 @@
 import "../App.css";
-import React, { useContext, useEffect, useState } from "react";
-import { Snackbar, Alert } from "@mui/material";
+import React, { useContext, useState } from "react";
+import { Snackbar, Alert, useMediaQuery } from "@mui/material";
 import {
   styled,
   alpha,
@@ -29,6 +29,7 @@ import { fetchSearchSong } from "../services/songService";
 import { useSearch } from "../contexts/SearchContext";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
+import { MusicPlayerContext } from "../contexts/MusicPlayerContext";
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
   borderRadius: "20px",
@@ -90,7 +91,9 @@ export default function MainHeader() {
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const isMobile = window.innerWidth <= 600;
   const open = Boolean(anchorEl);
-
+  const isIpad = useMediaQuery("(min-width:768px) and (max-width:1024px)");
+  const [showSearch, setShowSearch] = useState(!isIpad);
+  const { setCurrentSong } = useContext(MusicPlayerContext);
   const { updateSearchResults } = useSearch();
   const handleMenuClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -103,6 +106,7 @@ export default function MainHeader() {
 
   const handleLogout = () => {
     signout();
+    setCurrentSong(null);
     setAnchorEl(null);
     navigate("/");
   };
@@ -121,6 +125,7 @@ export default function MainHeader() {
   const handleSearchKeyPress = async (event) => {
     if (event.key === "Enter" && searchQuery.trim() !== "") {
       try {
+        navigate("/songs");
         const results = await fetchSearchSong({ title: searchQuery });
         if (results.songs && results.songs.length > 0) {
           updateSearchResults(results.songs); // Đồng bộ kết quả tìm kiếm
@@ -153,7 +158,7 @@ export default function MainHeader() {
   };
   const handleAdminClick = () => {
     if (user && user.role === "admin") {
-      navigate("/admin/dashboard/users");
+      navigate("/admin/dashboard");
     } else {
       setSnackbarMessage("You do not have permission to access this page.");
       setSnackbarSeverity("warning");
@@ -298,17 +303,24 @@ export default function MainHeader() {
                     <SearchIcon
                       sx={{ fontSize: "30px", paddingRight: "2px" }}
                       className="search-icon-inner"
+                      onClick={() => {
+                        if (isIpad && !showSearch) {
+                          setShowSearch(true);
+                        }
+                      }}
                     />
                   </SearchIconWrapper>
-                  <StyledInputBase
-                    value={searchQuery}
-                    onChange={handleSearchChange}
-                    onKeyDown={handleSearchKeyPress}
-                    placeholder="Search..."
-                    inputProps={{ "aria-label": "search" }}
-                    sx={{ ml: "10px", paddingTop: "8px", width: "200px" }}
-                    className="search-input"
-                  />
+                  {showSearch && (
+                    <StyledInputBase
+                      value={searchQuery}
+                      onChange={handleSearchChange}
+                      onKeyDown={handleSearchKeyPress}
+                      placeholder="Search..."
+                      inputProps={{ "aria-label": "search" }}
+                      sx={{ ml: "10px", paddingTop: "8px", width: "200px" }}
+                      className="search-input"
+                    />
+                  )}
                 </Search>
                 <IconButton
                   onClick={handleMusicIconClick}

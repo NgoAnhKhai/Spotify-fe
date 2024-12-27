@@ -57,7 +57,7 @@ export const getPendingInvoice = async () => {
   try {
     const response = await apiService.get("/invoices/pending");
 
-    return response.invoice;
+    return response;
   } catch (error) {
     if (error.message) {
       throw new Error(error.message);

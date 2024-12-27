@@ -6,6 +6,14 @@
   background-color: #000;
   overflow-y: auto;
 }
+.album-container {
+  display: flex;
+  justify-content: space-between;
+  width: "100%";
+  align-items: flex-start;
+  background-color: #000;
+  overflow-y: auto;
+}
 .playlist-container {
   display: flex;
   justify-content: space-between;

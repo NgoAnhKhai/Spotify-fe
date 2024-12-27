@@ -6,10 +6,12 @@ import {
   Typography,
   Snackbar,
   SnackbarContent,
+  InputAdornment,
+  IconButton,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import apiService from "../api/apiService";
-
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 const RegisterPage = () => {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
@@ -19,6 +21,12 @@ const RegisterPage = () => {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleClickShowPassword = () => {
+    setShowPassword((prev) => !prev);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -148,7 +156,7 @@ const RegisterPage = () => {
 
           <TextField
             label="Password"
-            type="password"
+            type={showPassword ? "text" : "password"} // <-- điều kiện hiển thị/ẩn
             fullWidth
             margin="normal"
             value={password}
@@ -168,6 +176,18 @@ const RegisterPage = () => {
                   borderColor: "white",
                 },
               },
+
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={handleClickShowPassword}
+                    edge="end"
+                    sx={{ color: "white" }}
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
             }}
             InputLabelProps={{
               sx: {

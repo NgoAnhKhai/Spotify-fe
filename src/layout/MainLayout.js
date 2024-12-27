@@ -4,7 +4,6 @@ import MainHeader from "./MainHeader";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import MainStartSong from "./MainStartSong";
 import { Grid, Box } from "@mui/material";
-import { MusicPlayerProvider } from "../contexts/MusicPlayerContext";
 import { useAuth } from "../contexts/AuthContext";
 import "./../App.css";
 const MainLayout = () => {

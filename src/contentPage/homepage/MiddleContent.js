@@ -47,7 +47,7 @@ const MiddleContent = ({ song }) => {
   const loadSongs = async () => {
     setLoading(true);
     try {
-      const data = await fetchGetAllSong();
+      const data = await fetchGetAllSong(1, 10, "popularity", "desc");
       setPlaylist(data.songs);
       setSongs(data.songs);
     } catch (error) {
@@ -103,29 +103,28 @@ const MiddleContent = ({ song }) => {
   };
 
   return (
-    <div className="HomePageContent">
-      <Box
-        sx={{
-          overflowY: "auto",
-          borderRadius: "10px",
-          height: isMobile ? "180vh" : "70vh",
-          maxHeight: "70vh",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          padding: "16px",
-          width: "100%",
-          position: "relative",
-          background:
-            theme.palette.mode === "dark"
-              ? "linear-gradient(to bottom, #1e90ff 15%, #000000)"
-              : "linear-gradient(to bottom, #1e90ff 15%, #ffffff)",
-          transition: "all 0.3s ease",
-          color: theme.palette.text.primary,
-        }}
-        className="top-songs-container"
-      >
+    <Box
+      sx={{
+        flex: 1,
+        overflowY: "auto",
+        padding: 7,
+        backgroundColor: theme.palette.background.default,
+        background:
+          theme.palette.mode === "dark"
+            ? "linear-gradient(to bottom, #1e90ff 15%, #000000)"
+            : "linear-gradient(to bottom, #1e90ff 15%, #ffffff)",
+        transition: "all 0.3s ease",
+        color: theme.palette.text.primary,
+        maxHeight: isMobile ? "75vh" : "70vh",
+        width: "100%",
+
+        borderRadius: "15px",
+        display: "flex",
+        flexDirection: "column",
+        gap: 3,
+      }}
+    >
+      {!isMobile && (
         <Box
           sx={{
             display: "flex",
@@ -192,11 +191,17 @@ const MiddleContent = ({ song }) => {
                         sx={{
                           fontWeight: "bold",
                           color: theme.palette.text.primary,
+                          display: "-webkit-box",
+                          overflow: "hidden",
+                          WebkitBoxOrient: "vertical",
+                          textOverflow: "ellipsis",
+                          width: "100%",
                         }}
                         className="song-title"
                       >
                         {song.title}
                       </Typography>
+
                       <Typography
                         variant="body2"
                         sx={{
@@ -229,173 +234,174 @@ const MiddleContent = ({ song }) => {
             )}
           </Grid>
         </Box>
-
-        {/* Feature Section */}
-        <Box
+      )}
+      {/* Feature Section */}
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-start",
+          width: "100%",
+          marginTop: "0px",
+          marginBottom: "32px",
+        }}
+        className="feature-section"
+      >
+        <Typography
+          variant="h4"
           sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "flex-start",
-            width: "100%",
-            marginTop: "0px",
-            marginBottom: "32px",
+            color: theme.palette.text.primary,
+            fontWeight: "bold",
+            textAlign: "left",
+            marginBottom: "24px",
           }}
-          className="feature-section"
+          className="feature-title"
         >
-          <Typography
-            variant="h4"
-            sx={{
-              color: theme.palette.text.primary,
-              fontWeight: "bold",
-              textAlign: "left",
-              marginBottom: "24px",
-            }}
-            className="feature-title"
-          >
-            Feature
-          </Typography>
+          Feature
+        </Typography>
 
-          <Box
-            sx={{
-              display: "flex",
-              flexWrap: "wrap",
-              justifyContent: "space-between",
-              width: "100%",
-              gap: "16px",
-            }}
-            className="feature-items-container"
-          >
-            {loading ? (
-              <SkeletonLoader className="skeleton-loader" />
-            ) : albums.length > 0 ? (
-              albums.map((album, index) => (
-                <Box
-                  key={index}
-                  sx={{
-                    backgroundColor:
-                      theme.palette.mode === "dark" ? "#121212" : "#f5f5f5",
-                    padding: "8px",
-                    borderRadius: "8px",
-                    color: theme.palette.text.primary,
-                    width: "calc(20% - 16px)",
-                    height: "calc(210.13px + 40px)",
-                    boxSizing: "border-box",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "flex-start",
-                    alignItems: "center",
-                    position: "relative",
-                    overflow: "hidden",
-                    cursor: "pointer",
-                    transition: "all 0.3s ease",
-                    "&:hover": {
-                      backgroundColor:
-                        theme.palette.mode === "dark" ? "#1a1a1a" : "#e0e0e0",
-                      transform: "scale(1.05)",
-                    },
-                  }}
-                  onClick={() => handleClick(album._id)}
-                  className="album-item"
-                >
-                  <img
-                    src={album.coverImageURL}
-                    alt={album.coverImageURL}
-                    style={{
-                      width: "200.41px",
-                      height: "200.13px",
-                      borderRadius: "8px",
-                      marginBottom: "8px",
-                    }}
-                    className="album-cover-image"
-                  />
-                  <Typography
-                    variant="body1"
-                    sx={{
-                      textAlign: "center",
-                      color: theme.palette.text.primary,
-                    }}
-                    className="album-title"
-                  >
-                    {album.title}
-                  </Typography>
-                </Box>
-              ))
-            ) : (
-              <Typography
-                sx={{
-                  color: theme.palette.text.primary,
-                  textAlign: "center",
-                }}
-                className="no-albums-text"
-              >
-                Không có album nào
-              </Typography>
-            )}
-          </Box>
-        </Box>
-
-        {/* Pagination Controls */}
         <Box
           sx={{
             display: "flex",
+            flexWrap: "wrap",
             justifyContent: "space-between",
-            alignItems: "center",
+            marginLeft: isMobile ? "-55px" : "0px",
             width: "100%",
-            maxWidth: "600px",
-            marginTop: "16px",
+            gap: "16px",
           }}
-          className="pagination-controls"
+          className="feature-items-container"
         >
-          <Button
-            variant="contained"
-            onClick={handlePreviousPage}
-            disabled={page === 1}
-            sx={{
-              borderRadius: "10px",
-              backgroundColor: "#1e90ff",
-              color: "#fff",
-            }}
-            className="pagination-button"
-          >
-            Previous
-          </Button>
-          <Typography
-            sx={{ color: theme.palette.text.primary }}
-            className="pagination-text"
-          >
-            Page {page} of {totalPages}
-          </Typography>
-          <Button
-            variant="contained"
-            onClick={handleNextPage}
-            disabled={page === totalPages}
-            sx={{
-              borderRadius: "10px",
-              backgroundColor: "#1e90ff",
-              color: "#fff",
-            }}
-            className="pagination-button"
-          >
-            Next
-          </Button>
+          {loading ? (
+            <SkeletonLoader className="skeleton-loader" />
+          ) : albums.length > 0 ? (
+            albums.map((album, index) => (
+              <Box
+                key={index}
+                sx={{
+                  backgroundColor:
+                    theme.palette.mode === "dark" ? "#121212" : "#f5f5f5",
+                  padding: "8px",
+                  borderRadius: "8px",
+                  color: theme.palette.text.primary,
+                  width: "calc(20% - 16px)",
+                  height: "calc(210.13px + 40px)",
+                  boxSizing: "border-box",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "flex-start",
+                  alignItems: "center",
+                  position: "relative",
+                  overflow: "hidden",
+                  cursor: "pointer",
+                  transition: "all 0.3s ease",
+                  "&:hover": {
+                    backgroundColor:
+                      theme.palette.mode === "dark" ? "#1a1a1a" : "#e0e0e0",
+                    transform: "scale(1.05)",
+                  },
+                }}
+                onClick={() => handleClick(album._id)}
+                className="album-item"
+              >
+                <img
+                  src={album.coverImageURL}
+                  alt={album.coverImageURL}
+                  style={{
+                    width: "200.41px",
+                    height: "200.13px",
+                    borderRadius: "8px",
+                    marginBottom: "8px",
+                  }}
+                  className="album-cover-image"
+                />
+                <Typography
+                  variant="body1"
+                  sx={{
+                    textAlign: "center",
+                    color: theme.palette.text.primary,
+                  }}
+                  className="album-title"
+                >
+                  {album.title}
+                </Typography>
+              </Box>
+            ))
+          ) : (
+            <Typography
+              sx={{
+                color: theme.palette.text.primary,
+                textAlign: "center",
+              }}
+              className="no-albums-text"
+            >
+              Không có album nào
+            </Typography>
+          )}
         </Box>
-
-        {/* Snackbar for unauthenticated users */}
-        <Snackbar
-          open={openSnackbar}
-          autoHideDuration={6000}
-          onClose={() => setOpenSnackbar(false)}
-        >
-          <Alert
-            onClose={() => setOpenSnackbar(false)}
-            severity="warning"
-            sx={{ width: "100%" }}
-          >
-            {snackbarMessage}
-          </Alert>
-        </Snackbar>
       </Box>
-    </div>
+
+      {/* Pagination Controls */}
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          width: "100%",
+          maxWidth: "100%^",
+          marginLeft: isMobile ? "-55px" : "0px",
+          marginTop: "16px",
+        }}
+        className="pagination-controls"
+      >
+        <Button
+          variant="contained"
+          onClick={handlePreviousPage}
+          disabled={page === 1}
+          sx={{
+            borderRadius: "10px",
+            backgroundColor: "#1e90ff",
+            color: "#fff",
+          }}
+          className="pagination-button"
+        >
+          Previous
+        </Button>
+        <Typography
+          sx={{ color: theme.palette.text.primary }}
+          className="pagination-text"
+        >
+          Page {page} of {totalPages}
+        </Typography>
+        <Button
+          variant="contained"
+          onClick={handleNextPage}
+          disabled={page === totalPages}
+          sx={{
+            borderRadius: "10px",
+            backgroundColor: "#1e90ff",
+            color: "#fff",
+          }}
+          className="pagination-button"
+        >
+          Next
+        </Button>
+      </Box>
+
+      {/* Snackbar for unauthenticated users */}
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={6000}
+        onClose={() => setOpenSnackbar(false)}
+      >
+        <Alert
+          onClose={() => setOpenSnackbar(false)}
+          severity="warning"
+          sx={{ width: "100%" }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
+    </Box>
   );
 };
 

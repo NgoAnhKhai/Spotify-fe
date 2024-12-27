@@ -8,8 +8,13 @@ import {
   Box,
   Snackbar,
   SnackbarContent,
+  InputAdornment,
+  IconButton,
 } from "@mui/material";
+import { Link as RouterLink } from "react-router-dom";
+import { Link } from "@mui/material";
 
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -19,6 +24,11 @@ const LoginPage = () => {
   const [snackbarMessage] = useState("");
   const { signin } = useAuth();
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleClickShowPassword = () => {
+    setShowPassword((prev) => !prev);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -119,7 +129,8 @@ const LoginPage = () => {
 
           <TextField
             label="Mật khẩu"
-            type="password"
+            // thay type="password" bằng điều kiện
+            type={showPassword ? "text" : "password"}
             fullWidth
             margin="normal"
             value={password}
@@ -139,6 +150,18 @@ const LoginPage = () => {
                   borderColor: "white",
                 },
               },
+
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={handleClickShowPassword}
+                    edge="end"
+                    sx={{ color: "white" }}
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
             }}
             InputLabelProps={{
               sx: {
@@ -146,6 +169,24 @@ const LoginPage = () => {
               },
             }}
           />
+          <Typography
+            variant="body2"
+            align="center"
+            sx={{ mt: 2, color: "white" }}
+          >
+            Bạn chưa có tài khoản?{" "}
+            <Link
+              component={RouterLink}
+              to="/register"
+              sx={{
+                color: "#1e90ff",
+                textDecoration: "none",
+                cursor: "pointer",
+              }}
+            >
+              Hãy đăng ký.
+            </Link>
+          </Typography>
 
           {error && <Typography color="error">{error}</Typography>}
           <Button
