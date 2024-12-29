@@ -192,9 +192,6 @@ function LeftSideBar() {
     setOpenDeleteDialog(false);
     setPlaylistToDelete(null);
   };
-  if (isMobile) {
-    return null;
-  }
   return (
     <Box
       sx={{
