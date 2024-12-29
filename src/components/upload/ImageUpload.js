@@ -9,8 +9,6 @@ import {
   DialogContent,
   DialogTitle,
 } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
-
 const ImageUploader = ({ imageUrl, onUpload }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [open, setOpen] = useState(false);

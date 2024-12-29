@@ -93,6 +93,7 @@ export const MusicPlayerProvider = ({ children }) => {
       audio.removeEventListener("play", handlePlay);
       audio.removeEventListener("pause", handlePause);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subscriptionType, adPlayed, isAdPlaying]);
 
   const playAd = () => {

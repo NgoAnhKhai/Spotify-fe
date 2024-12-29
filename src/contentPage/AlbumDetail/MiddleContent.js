@@ -25,6 +25,7 @@ import {
   fetchPlaylistUser,
   fetchRemoveSongToPlaylist,
 } from "../../services/playlistService";
+import { fetchSongUpdate } from "../../services/adminServices.js/SongsAdminServices/fetchSongUpdate";
 
 const MiddleContent = () => {
   const { id } = useParams();
@@ -96,10 +97,18 @@ const MiddleContent = () => {
     return <div>{error}</div>;
   }
 
-  const handleSongClick = (songID) => {
+  const handleSongClick = async (songID) => {
     const songData = album.listSong.find((song) => song._id === songID);
     setCurrentSong({ ...songData, artist: album.artistID });
-    console.log("SongData:", songData);
+    const updatedSongs = album.listSong.map((song) =>
+      song._id === songID ? { ...song, popularity: song.popularity + 1 } : song
+    );
+    setAlbum({ ...album, listSong: updatedSongs });
+    await fetchSongUpdate(songID, { popularity: songData.popularity + 1 });
+    const revertedSongs = album.listSong.map((song) =>
+      song._id === songID ? { ...song, popularity: song.popularity - 1 } : song
+    );
+    setAlbum({ ...album, listSong: revertedSongs });
   };
 
   const handleOpenAddModal = (songID) => {

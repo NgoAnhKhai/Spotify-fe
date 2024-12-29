@@ -29,6 +29,7 @@ import ArtistSkeleton from "../../components/skeleton/ArtistSkeleton";
 import { isFollowingArtist } from "../../services/favorites/fetchIsFollowingArtist";
 import { fetchUnfollowingArtists } from "../../services/favorites/unfollowArtists";
 import { fetchFollowingArtist } from "../../services/favorites/followArtists";
+import { fetchSongUpdate } from "../../services/adminServices.js/SongsAdminServices/fetchSongUpdate";
 const ArtistDetailPage = () => {
   const { id } = useParams();
   const [artist, setArtist] = useState(null);
@@ -74,7 +75,6 @@ const ArtistDetailPage = () => {
         setArtist(artistData.artist);
         setPlaylist(artistData.artist.songs || []);
 
-        // Kiểm tra trạng thái follow
         const followingStatus = await isFollowingArtist(artistData.artist._id);
         setIsFollowing(followingStatus.isFollowing);
 
@@ -110,10 +110,24 @@ const ArtistDetailPage = () => {
     return <div>{error}</div>;
   }
 
-  const handleSongClick = (songID) => {
+  const handleSongClick = async (songID) => {
     const songData = artist.songs.find((song) => song._id === songID);
+    if (!songData) return;
+
     setCurrentSong({ ...songData, artist: artist });
-    console.log("SongData:", songData);
+
+    try {
+      await fetchSongUpdate(songID, { popularity: songData.popularity + 1 });
+    } catch (error) {
+      console.error("Error updating song popularity:", error);
+
+      const revertedSongs = artist.songs.map((song) =>
+        song._id === songID
+          ? { ...song, popularity: song.popularity - 1 }
+          : song
+      );
+      setArtist({ ...artist, songs: revertedSongs });
+    }
   };
 
   const handleOpenAddModal = (songID) => {

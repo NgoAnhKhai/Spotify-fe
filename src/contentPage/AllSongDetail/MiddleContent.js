@@ -24,6 +24,7 @@ import {
   fetchPlaylistUser,
 } from "../../services/playlistService";
 import SkeletonLoaderSong from "../../components/skeleton/AllSongSkeleton";
+import { fetchSongUpdate } from "../../services/adminServices.js/SongsAdminServices/fetchSongUpdate";
 
 export default function MiddleContent() {
   const [songsData, setSongsData] = useState([]);
@@ -31,7 +32,7 @@ export default function MiddleContent() {
   const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  // Bỏ state songsPerPage
+
   const [playlists, setPlaylists] = useState([]);
   const [openAddModal, setOpenAddModal] = useState(false);
   const [selectedSongID, setSelectedSongID] = useState(null);
@@ -44,7 +45,6 @@ export default function MiddleContent() {
   const { searchResults, searchQuery, updateSearchResults } = useSearch();
   const isMobile = useMediaQuery("(max-width:600px)");
 
-  // Hàm để tải bài hát
   const loadSongs = async (page = 1) => {
     setLoading(true);
     try {
@@ -114,8 +114,26 @@ export default function MiddleContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery, songsData]);
 
-  const handleSongClick = (song) => {
+  const handleSongClick = async (song) => {
+    if (!song || !song._id) {
+      setSnackbarMessage("Song data is invalid or not available");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      return;
+    }
     setCurrentSong(song);
+    try {
+      await fetchSongUpdate(song._id, {
+        popularity: song.popularity + 1,
+      });
+    } catch (error) {
+      console.error("Failed to update song popularity", error);
+      setSongsData((prevSongs) =>
+        prevSongs.map((s) =>
+          s._id === song._id ? { ...s, popularity: s.popularity - 1 } : s
+        )
+      );
+    }
   };
 
   const handleAddModalOpen = (event, songID) => {

@@ -17,6 +17,7 @@ import { fetchGetAllSong } from "../../services/songService";
 import { MusicPlayerContext } from "../../contexts/MusicPlayerContext";
 import { useAuth } from "../../contexts/AuthContext";
 import SkeletonLoader from "../../components/skeleton/HomePageskeleton";
+import { fetchSongUpdate } from "../../services/adminServices.js/SongsAdminServices/fetchSongUpdate";
 
 const MiddleContent = ({ song }) => {
   const [albums, setAlbums] = useState([]);
@@ -57,21 +58,40 @@ const MiddleContent = ({ song }) => {
     }
   };
 
-  const handleSongClick = (song) => {
+  const handleSongClick = async (song) => {
     if (!user) {
       setSnackbarMessage("Please log in to listen to the song.");
       setOpenSnackbar(true);
       navigate("/login");
-    } else {
-      setCurrentSong(song);
-      setPlaylist(songs);
-      console.log("Playing song:", song.title);
+      return;
+    }
+
+    setCurrentSong(song);
+    setPlaylist(songs);
+
+    setSongs((prevSongs) =>
+      prevSongs.map((s) =>
+        s._id === song._id ? { ...s, popularity: s.popularity + 1 } : s
+      )
+    );
+
+    try {
+      await fetchSongUpdate(song._id, {
+        popularity: song.popularity + 1,
+      });
+    } catch (error) {
+      setSongs((prevSongs) =>
+        prevSongs.map((s) =>
+          s._id === song._id ? { ...s, popularity: s.popularity - 1 } : s
+        )
+      );
     }
   };
 
   useEffect(() => {
     loadSongs();
     loadAlbums(page);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
 
   useEffect(() => {

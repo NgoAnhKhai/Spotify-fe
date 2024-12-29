@@ -1,4 +1,3 @@
-// src/info/ArtistInfo.jsx
 import React from "react";
 import { Box, Typography, Divider, Button } from "@mui/material";
 import styled from "styled-components";
@@ -14,20 +13,6 @@ const StyledButton = styled(Button)(({ theme }) => ({
   transition: "all 0.3s ease",
   "&:hover": {
     backgroundColor: "#fff",
-    color: "#000",
-    transform: "scale(1.1)",
-  },
-}));
-
-const StyleButtonHold = styled(Button)(({ theme }) => ({
-  color: "#000",
-  fontWeight: "bold",
-  border: "1px solid #fff",
-  borderRadius: "25px",
-  padding: "8px 16px",
-  textTransform: "none",
-  transition: "all 0.3s ease",
-  "&:hover": {
     color: "#000",
     transform: "scale(1.1)",
   },

@@ -1,6 +1,5 @@
 import apiService from "../api/apiService";
 
-//MiddleContentDetailAlbum
 export const fetchAlbumById = async (albumId) => {
   try {
     const response = await apiService.get(`/albums/${albumId}`);
@@ -11,7 +10,6 @@ export const fetchAlbumById = async (albumId) => {
   }
 };
 
-//MiddleContentHomePage
 export const fetchAllAlbums = async (page = 1, limit = 5) => {
   try {
     const response = await apiService.get(

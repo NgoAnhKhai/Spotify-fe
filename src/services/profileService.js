@@ -106,7 +106,6 @@ export const cancelSubscription = async (userId) => {
     throw error;
   }
 };
-//ChangePassword
 
 export const fetchChangePassword = async (
   userId,

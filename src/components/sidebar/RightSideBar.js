@@ -1,4 +1,3 @@
-// src/components/RightSideBar.jsx
 import React, { useState, useEffect, useCallback, useContext } from "react";
 import {
   Drawer,
@@ -16,7 +15,7 @@ import {
 } from "@mui/material";
 import { ArrowLeft as ArrowLeftIcon } from "@mui/icons-material";
 import styled from "styled-components";
-import { useMatch, useNavigate, useParams } from "react-router-dom";
+import { useMatch, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { fetchAlbumById } from "../../services/albumService";
 import { fetchFollowingArtist } from "../../services/favorites/followArtists";
@@ -28,6 +27,35 @@ import SongInfo from "../../info/SongInfo";
 import AlbumInfo from "../../info/AlbumInfo";
 import { fetchArtistById } from "../../services/artistService";
 import ArtistInfo from "../../info/ArtistInfo";
+const StyledButton = styled(Button)(({ theme }) => ({
+  color: "#000",
+  fontWeight: "bold",
+  backgroundColor: "#fff",
+  border: "1px solid #fff",
+  borderRadius: "25px",
+  padding: "8px 16px",
+  textTransform: "none",
+  transition: "all 0.3s ease",
+  "&:hover": {
+    backgroundColor: "#fff",
+    color: "#000",
+    transform: "scale(1.1)",
+  },
+}));
+
+const StyleButtonHold = styled(Button)(({ theme }) => ({
+  color: "#000",
+  fontWeight: "bold",
+  border: "1px solid #fff",
+  borderRadius: "25px",
+  padding: "8px 16px",
+  textTransform: "none",
+  transition: "all 0.3s ease",
+  "&:hover": {
+    color: "#000",
+    transform: "scale(1.1)",
+  },
+}));
 
 function RightSideBar() {
   const isMobile = useMediaQuery("(max-width:600px)");
@@ -37,9 +65,10 @@ function RightSideBar() {
   const [album, setAlbum] = useState(null);
   const [open, setOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(true);
-  const { currentSong, setCurrentSong } = useContext(MusicPlayerContext);
+
+  const { currentSong } = useContext(MusicPlayerContext);
+
   const [loading, setLoading] = useState(true);
-  const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [isFollowing, setIsFollowing] = useState(false);
@@ -108,19 +137,15 @@ function RightSideBar() {
           setArtistLoading(false);
         }
       } else if (matchAlbum) {
-        // Trang album
         const albumId = matchAlbum.params.id;
         if (!albumId) {
           setAlbum(null);
           setLoading(false);
           return;
         }
-
         setLoading(true);
         try {
           const albumData = await fetchAlbumById(albumId);
-          console.log("albumData", albumData);
-
           setAlbum(albumData);
 
           if (user && albumData.artistID && albumData.artistID._id) {
@@ -137,7 +162,6 @@ function RightSideBar() {
           setLoading(false);
         }
       } else {
-        // Không phải trang nghệ sĩ hoặc album
         setArtist(null);
         setAlbum(null);
         setArtistLoading(false);
@@ -194,43 +218,13 @@ function RightSideBar() {
     setDrawerWidth(isDrawerOpen ? 0 : 240);
     setIsExpanded(!isExpanded);
   };
-
-  const StyledButton = styled(Button)(({ theme }) => ({
-    color: "#000",
-    fontWeight: "bold",
-    backgroundColor: "#fff",
-    border: "1px solid #fff",
-    borderRadius: "25px",
-    padding: "8px 16px",
-    textTransform: "none",
-    transition: "all 0.3s ease",
-    "&:hover": {
-      backgroundColor: "#fff",
-      color: "#000",
-      transform: "scale(1.1)",
-    },
-  }));
-
-  const StyleButtonHold = styled(Button)(({ theme }) => ({
-    color: "#000",
-    fontWeight: "bold",
-    border: "1px solid #fff",
-    borderRadius: "25px",
-    padding: "8px 16px",
-    textTransform: "none",
-    transition: "all 0.3s ease",
-    "&:hover": {
-      color: "#000",
-      transform: "scale(1.1)",
-    },
-  }));
-
-  const navigateLogin = () => {
-    navigate("/login");
-  };
   if (isMobile) {
     return null;
   }
+  const navigateLogin = () => {
+    navigate("/login");
+  };
+
   return (
     <Box
       sx={{
@@ -289,7 +283,6 @@ function RightSideBar() {
                         handleFollowClick={handleFollowClick}
                       />
                     ) : (
-                      // Hiển thị thông báo khi đang tải dữ liệu album
                       <Box
                         sx={{
                           display: "flex",
@@ -318,7 +311,6 @@ function RightSideBar() {
                 {matchArtist && (
                   <>
                     {artistLoading ? (
-                      // Hiển thị thông báo khi đang tải dữ liệu nghệ sĩ
                       <Box
                         sx={{
                           display: "flex",
@@ -340,14 +332,12 @@ function RightSideBar() {
                         </Typography>
                       </Box>
                     ) : artist ? (
-                      // Hiển thị thông tin nghệ sĩ
                       <ArtistInfo
                         artist={artist}
                         isFollowing={isFollowing}
                         handleFollowClick={handleFollowClick}
                       />
                     ) : artistError ? (
-                      // Hiển thị thông báo lỗi nếu có
                       <Box
                         sx={{
                           display: "flex",
@@ -401,7 +391,6 @@ function RightSideBar() {
               </Box>
             )
           ) : (
-            // Hiển thị thông điệp yêu cầu đăng nhập hoặc khác khi người dùng chưa đăng nhập
             <Box
               sx={{
                 display: "flex",

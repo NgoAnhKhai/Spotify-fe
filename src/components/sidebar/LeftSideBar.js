@@ -24,6 +24,37 @@ import {
   fetchDeletePlaylist,
 } from "../../services/playlistService";
 
+const StyledButton = styled(Button)(({ theme }) => ({
+  color: "#000",
+  fontWeight: "bold",
+  backgroundColor: "#fff",
+  border: "1px solid #fff",
+  borderRadius: "25px",
+  padding: "8px 16px",
+  textTransform: "none",
+  transition: "all 0.3s ease",
+  "&:hover": {
+    backgroundColor: "#fff",
+    color: "#000",
+    transform: "scale(1.1)",
+  },
+}));
+
+const StyleButtonHold = styled(Button)(({ theme }) => ({
+  color: "#000",
+  fontWeight: "bold",
+  border: "1px solid #fff",
+  borderRadius: "25px",
+  padding: "8px 16px",
+  top: "1px",
+  textTransform: "none",
+  transition: "all 0.3s ease",
+  "&:hover": {
+    color: "#000",
+    transform: "scale(1.1)",
+  },
+}));
+
 function LeftSideBar() {
   const [drawerWidth, setDrawerWidth] = useState(240);
   const [isResizing, setIsResizing] = useState(false);
@@ -161,38 +192,9 @@ function LeftSideBar() {
     setOpenDeleteDialog(false);
     setPlaylistToDelete(null);
   };
-
-  const StyledButton = styled(Button)(({ theme }) => ({
-    color: "#000",
-    fontWeight: "bold",
-    backgroundColor: "#fff",
-    border: "1px solid #fff",
-    borderRadius: "25px",
-    padding: "8px 16px",
-    textTransform: "none",
-    transition: "all 0.3s ease",
-    "&:hover": {
-      backgroundColor: "#fff",
-      color: "#000",
-      transform: "scale(1.1)",
-    },
-  }));
-
-  const StyleButtonHold = styled(Button)(({ theme }) => ({
-    color: "#000",
-    fontWeight: "bold",
-    border: "1px solid #fff",
-    borderRadius: "25px",
-    padding: "8px 16px",
-    top: "1px",
-    textTransform: "none",
-    transition: "all 0.3s ease",
-    "&:hover": {
-      color: "#000",
-      transform: "scale(1.1)",
-    },
-  }));
-
+  if (isMobile) {
+    return null;
+  }
   return (
     <Box
       sx={{

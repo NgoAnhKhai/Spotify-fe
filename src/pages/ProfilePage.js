@@ -70,6 +70,7 @@ const ProfilePage = () => {
 
   useEffect(() => {
     reloadUserProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const showSnackbar = (message, severity = "success") => {

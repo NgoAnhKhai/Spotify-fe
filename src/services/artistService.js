@@ -1,4 +1,3 @@
-// artistServices.js
 import apiService from "../api/apiService";
 
 export async function fetchArtistById(id) {
