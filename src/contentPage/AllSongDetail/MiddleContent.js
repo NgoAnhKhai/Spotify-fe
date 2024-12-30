@@ -59,7 +59,6 @@ export default function MiddleContent() {
     }
   };
 
-  // Hàm để tải playlist của người dùng
   const loadUserPlaylists = async () => {
     try {
       const userPlaylists = await fetchPlaylistUser();
@@ -77,7 +76,6 @@ export default function MiddleContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage]);
 
-  // Tải kết quả tìm kiếm khi có query
   useEffect(() => {
     if (searchQuery) {
       const searchSongs = async () => {
@@ -204,7 +202,7 @@ export default function MiddleContent() {
       sx={{
         flex: 1,
         overflowY: "auto",
-        maxHeight: "70vh",
+        maxHeight: "65vh",
         borderRadius: "10px",
         width: isMobile ? "90%" : "100%",
         marginLeft: isMobile ? "auto" : "0",

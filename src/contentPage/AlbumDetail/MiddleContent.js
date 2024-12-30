@@ -220,7 +220,7 @@ const MiddleContent = () => {
             : "linear-gradient(to bottom, #1e90ff 15%, #ffffff)",
         transition: "all 0.3s ease",
         color: theme.palette.text.primary,
-        height: isIpad ? "75vh" : isMobile ? "75vh" : "75vh",
+        height: isIpad ? "75vh" : isMobile ? "75vh" : "70vh",
         minHeight: "70vh",
         width: "100%",
         borderRadius: "15px",
