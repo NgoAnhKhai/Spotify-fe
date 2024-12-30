@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Box, Typography, Grid, Paper } from "@mui/material";
+import { Box, Typography, Grid, Paper, IconButton } from "@mui/material";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import AlbumIcon from "@mui/icons-material/Album";
 import PeopleIcon from "@mui/icons-material/People";
 import PersonIcon from "@mui/icons-material/Person";
 import CategoryIcon from "@mui/icons-material/Category";
+import HomeIcon from "@mui/icons-material/Home";
 import { useAuth } from "../../contexts/AuthContext";
 import fetchGetAllUser from "../../services/adminServices.js/UsersAdminServices.js/fetchGetAllUser";
 import AdminIconComponent from "../../components/adminIcon/AdminIconComponent";
@@ -18,27 +19,31 @@ import { fetchGetAllSong } from "../../services/songService";
 import { fetchGetAllAlbums } from "../../services/adminServices.js/AlbumsAdminServices.js/fetchGetAllAlbums";
 import { fetchGetAllArtist } from "../../services/adminServices.js/ArtistAdminServices.js/fetchGetAllArtist";
 import { fetchGetAllGenres } from "../../services/adminServices.js/GenresAdminServices.js/fetchAllGenres";
+import { Link } from "react-router-dom";
+import AdminSkeletonLoader from "../../components/skeleton/AdminSkeletonLoader";
 
 const AdminPage = () => {
   const { user, signout } = useAuth();
   const [activeTab, setActiveTab] = useState(0);
   const [showUsersManager, setShowUsersManager] = useState(false);
-  const [showSongsManager, SetShowSongsManager] = useState(false);
-  const [showAlbumsManager, SetShowAlbumsManager] = useState(false);
-  const [showArtistsManager, SetShowArtistsManager] = useState(false);
-  const [showGenresManager, SetShowGenresManager] = useState(false);
+  const [showSongsManager, setShowSongsManager] = useState(false);
+  const [showAlbumsManager, setShowAlbumsManager] = useState(false);
+  const [showArtistsManager, setShowArtistsManager] = useState(false);
+  const [showGenresManager, setShowGenresManager] = useState(false);
   const [totalUsers, setTotalUsers] = useState(0);
   const [totalSongs, setTotalSongs] = useState(0);
   const [totalAlbums, setTotalAlbums] = useState(0);
   const [totalArtits, setTotalArtits] = useState(0);
   const [totalGenres, setTotalGenres] = useState(0);
+  const [loading, setLoading] = useState(true);
+
   const handleCardClick = (tabIndex) => {
     setActiveTab(tabIndex);
     setShowUsersManager(tabIndex === 3);
-    SetShowSongsManager(tabIndex === 0);
-    SetShowAlbumsManager(tabIndex === 1);
-    SetShowArtistsManager(tabIndex === 2);
-    SetShowGenresManager(tabIndex === 4);
+    setShowSongsManager(tabIndex === 0);
+    setShowAlbumsManager(tabIndex === 1);
+    setShowArtistsManager(tabIndex === 2);
+    setShowGenresManager(tabIndex === 4);
   };
 
   const handleLogout = () => {
@@ -47,28 +52,36 @@ const AdminPage = () => {
 
   useEffect(() => {
     const fetchTotals = async () => {
+      setLoading(true); // Bắt đầu loading
       try {
         // Fetch total users
         const userData = await fetchGetAllUser(1, 1);
+        console.log("User Data:", userData);
         setTotalUsers(userData?.pagination?.totalUsers || 0);
 
         // Fetch total songs
         const songData = await fetchGetAllSong(1, 1);
+        console.log("Song Data:", songData);
         setTotalSongs(songData?.pagination?.totalSong || 0);
 
         // Fetch total albums
         const albumData = await fetchGetAllAlbums(1, 1);
+        console.log("Album Data:", albumData);
         setTotalAlbums(albumData?.pagination?.totalAlbums || 0);
 
         // Fetch total Artist
-        const ArtistData = await fetchGetAllArtist(1, 1);
-        setTotalArtits(ArtistData?.pagination?.totalArtists || 0);
+        const artistData = await fetchGetAllArtist(1, 1);
+        console.log("Artist Data:", artistData);
+        setTotalArtits(artistData?.pagination?.totalArtists || 0);
 
         // Fetch total Genres
-        const GenreData = await fetchGetAllGenres(1, 1);
-        setTotalGenres(GenreData?.pagination?.totalGenres || 0);
+        const genreData = await fetchGetAllGenres(1, 1);
+        console.log("Genre Data:", genreData);
+        setTotalGenres(genreData?.pagination?.totalGenres || 0);
       } catch (error) {
         console.error("Error fetching totals:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -103,6 +116,10 @@ const AdminPage = () => {
     },
   ];
 
+  if (loading) {
+    return <AdminSkeletonLoader />;
+  }
+
   return (
     <Box
       sx={{
@@ -130,6 +147,15 @@ const AdminPage = () => {
           </Typography>
         </Box>
         <Box sx={{ display: "flex", alignItems: "center", gap: "16px" }}>
+          <IconButton
+            component={Link}
+            to="/"
+            sx={{ color: "#fff" }}
+            aria-label="Home"
+          >
+            <HomeIcon />
+          </IconButton>
+
           <AdminIconComponent user={user} />
           <UserMenuComponent user={user} onLogout={handleLogout} />
         </Box>
@@ -186,7 +212,7 @@ const AdminPage = () => {
         />
       </Box>
 
-      {/* Display UsersManagerment if Total Users is clicked */}
+      {/* Display Management Components Based on Active Tab */}
       {showUsersManager && (
         <Box sx={{ marginTop: "40px" }}>
           <UsersManagement />
