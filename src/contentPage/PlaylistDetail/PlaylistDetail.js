@@ -113,7 +113,7 @@ const PlaylistDetail = () => {
   };
   const handleUpload = async (file) => {
     const formData = new FormData();
-    formData.append("coverImage", file);
+    formData.append("coverImageURL", file);
 
     try {
       const updatedPlaylist = await updatePlaylistCoverImage(id, formData);
@@ -162,10 +162,7 @@ const PlaylistDetail = () => {
       >
         {/* Playlist Cover */}
         <ImageUploader
-          imageUrl={
-            playlist?.coverImageURL &&
-            `http://localhost:8000${playlist.coverImageURL}`
-          }
+          imageUrl={playlist?.coverImageURL}
           onUpload={handleUpload}
         />
 
