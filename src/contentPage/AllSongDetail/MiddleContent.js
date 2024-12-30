@@ -16,7 +16,7 @@ import {
 } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import AddIcon from "@mui/icons-material/Add";
-import { fetchGetAllSong, fetchSearchSong } from "../../services/songService";
+import { fetchGetAllSong } from "../../services/songService";
 import { MusicPlayerContext } from "../../contexts/MusicPlayerContext";
 import { useSearch } from "../../contexts/SearchContext";
 import {
@@ -42,7 +42,7 @@ export default function MiddleContent() {
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const { setCurrentSong, setPlaylist } = useContext(MusicPlayerContext);
   const theme = useTheme();
-  const { searchResults, searchQuery, updateSearchResults } = useSearch();
+  const { searchResults, updateSearchResults } = useSearch();
   const isMobile = useMediaQuery("(max-width:600px)");
 
   const loadSongs = async (page = 1) => {
@@ -59,6 +59,7 @@ export default function MiddleContent() {
     }
   };
 
+  // Hàm để tải playlist của người dùng
   const loadUserPlaylists = async () => {
     try {
       const userPlaylists = await fetchPlaylistUser();
@@ -75,42 +76,6 @@ export default function MiddleContent() {
     loadUserPlaylists();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage]);
-
-  useEffect(() => {
-    if (searchQuery) {
-      const searchSongs = async () => {
-        setLoading(true);
-        try {
-          const response = await fetchSearchSong(searchQuery);
-          if (response && response.songs && response.songs.length > 0) {
-            setSnackbarMessage("Tìm kiếm thành công!");
-            setSnackbarSeverity("success");
-            setSnackbarOpen(true);
-            updateSearchResults(response.songs);
-            setPlaylist(response.songs);
-          } else {
-            setSnackbarMessage("Không có bài hát nào tìm thấy");
-            setSnackbarSeverity("error");
-            setSnackbarOpen(true);
-            updateSearchResults([]);
-            setPlaylist([]);
-          }
-        } catch (err) {
-          setSnackbarMessage("Không có bài hát nào tìm thấy");
-          setSnackbarSeverity("error");
-          setSnackbarOpen(true);
-          updateSearchResults([]);
-          setPlaylist([]);
-        } finally {
-          setLoading(false);
-        }
-      };
-      searchSongs();
-    } else {
-      setPlaylist(songsData);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchQuery, songsData]);
 
   const handleSongClick = async (song) => {
     if (!song || !song._id) {
@@ -168,9 +133,7 @@ export default function MiddleContent() {
         : [...prev, playlistID]
     );
   };
-
-  const listSongs =
-    searchQuery && searchResults.length > 0 ? searchResults : songsData;
+  const listSongs = searchResults.length > 0 ? searchResults : songsData;
 
   if (loading) {
     return <SkeletonLoaderSong />;
@@ -202,7 +165,7 @@ export default function MiddleContent() {
       sx={{
         flex: 1,
         overflowY: "auto",
-        maxHeight: "65vh",
+        maxHeight: "70vh",
         borderRadius: "10px",
         width: isMobile ? "90%" : "100%",
         marginLeft: isMobile ? "auto" : "0",
@@ -234,7 +197,7 @@ export default function MiddleContent() {
               fontWeight="bold"
               mb={2}
             >
-              {searchQuery ? "Search Results" : "All Songs"}
+              {searchResults.length > 0 ? "Search Results" : "All Songs"}
             </Typography>
           </Box>
           <Box

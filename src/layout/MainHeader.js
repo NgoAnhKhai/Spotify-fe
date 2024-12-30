@@ -127,12 +127,14 @@ export default function MainHeader() {
       try {
         navigate("/songs");
         const results = await fetchSearchSong({ title: searchQuery });
-        if (results.songs && results.songs.length > 0) {
-          updateSearchResults(results.songs); // Đồng bộ kết quả tìm kiếm
+        if (results.songs) {
+          updateSearchResults(results.songs);
+          console.log("Search Results:", results.songs);
+
           setSnackbarMessage(`Tìm thấy ${results.songs.length} bài hát.`);
           setSnackbarSeverity("success");
         } else {
-          updateSearchResults([]); // Không có kết quả
+          updateSearchResults([]);
           setSnackbarMessage("Không có bài hát nào tìm thấy!");
           setSnackbarSeverity("error");
         }

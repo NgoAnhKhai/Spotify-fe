@@ -22,14 +22,7 @@ export const fetchSearchSong = async ({ title, page = 1, limit = 5 }) => {
       params: { title, page, limit },
     });
 
-    if (response) {
-      return {
-        songs: response.songs,
-        pagination: response.pagination,
-      };
-    }
-
-    throw new Error("No data found");
+    return response;
   } catch (error) {
     console.error("Error fetching search songs:", error);
     throw error;
