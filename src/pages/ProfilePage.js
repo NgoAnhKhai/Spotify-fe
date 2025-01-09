@@ -57,6 +57,8 @@ const ProfilePage = () => {
     try {
       const userData = await fetchUserProfile(id);
       setUserProfile(userData);
+      console.log("User Data:", userData);
+
       setUpdatedProfile({
         username: userData.username,
         email: userData.email,
@@ -261,17 +263,7 @@ const ProfilePage = () => {
                     nghiệm tuyệt vời!
                   </Typography>
                   <Typography sx={{ marginTop: 2 }}>
-                    Bạn đã mua gói vào ngày:{" "}
-                    <b style={{ color: "#1e90ff" }}>
-                      {userProfile.paymentDate
-                        ? new Date(userProfile.paymentDate).toLocaleDateString(
-                            "vi-VN"
-                          )
-                        : "Chưa thanh toán"}
-                    </b>
-                  </Typography>
-                  <Typography sx={{ marginTop: 2 }}>
-                    Sẽ hết hạn vào:{" "}
+                    Gói của bạn sẽ hết hạn vào:{" "}
                     <b style={{ color: "#1e90ff" }}>
                       {userProfile.premiumExpiryDate
                         ? new Date(
