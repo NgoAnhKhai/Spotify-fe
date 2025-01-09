@@ -135,7 +135,7 @@ const MiddleContent = ({ song }) => {
             : "linear-gradient(to bottom, #1e90ff 15%, #ffffff)",
         transition: "all 0.3s ease",
         color: theme.palette.text.primary,
-        maxHeight: isMobile ? "75vh" : "70vh",
+        maxHeight: isMobile ? "75vh" : "75vh",
         width: "100%",
 
         borderRadius: "15px",
